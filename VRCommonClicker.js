@@ -25,13 +25,13 @@ THREE.CommonClicker.isOculus = false;
 THREE.CommonClicker.Controls = undefined;
 THREE.CommonClicker.Raycaster = new THREE.Raycaster();
 THREE.CommonClicker.MousePos = new THREE.Vector2();
-THREE.CommonClicker.VRController = undefined;
+THREE.CommonClicker.VRController = {};
 THREE.CommonClicker.VRScene = undefined;
 THREE.CommonClicker.VRCamera = undefined;
 THREE.CommonClicker.VRRenderer = undefined;
 THREE.CommonClicker.VRPointer = {};
 THREE.CommonClicker.InteractionTargets = [];
-THREE.CommonClicker.PointerDown = false;
+THREE.CommonClicker.PointerDown = {};
 THREE.CommonClicker.SupportsVR = false;
 
 THREE.CommonClicker.CheckIfOculus = function() {
@@ -49,21 +49,21 @@ THREE.CommonClicker.OnMouseMove = function( event ) {
 
 THREE.CommonClicker.OnMouseDown = function( event ) {
 	var scope = THREE.CommonClicker;
-	scope.PointerDown = true;
+	scope.PointerDown["right"] = true;
 }
 
 THREE.CommonClicker.OnMouseUp = function( event ) {
 	var scope = THREE.CommonClicker;
-	scope.PointerDown = false;
+	scope.PointerDown["right"] = false;
 }
 
 THREE.CommonClicker.CreateVRPointer = function(handedness) {
 	var rayLength = 30;
 	
 	var colorDict;
-	if (handedness == "left") {
+	if (handedness == "left") { // red left
 		colorDict = {color: 0xFF9999};
-	} else if (handedness = "right") {
+	} else if (handedness = "right") { // blue right
 		colorDict = {color: 0x9999FF};
 	} else {
 		colorDict = {color: 0x99FF99};		
@@ -112,10 +112,17 @@ THREE.CommonClicker.Init = function(scene, camera, renderer, enableVR) {
 	scope.VRCamera = camera;
 	scope.VRRenderer = renderer;
 
-	if (scope.VRController !== undefined) {
-		scope.VRScene.add( scope.VRController );
-		controller.head = scope.VRCamera;
+	for (var hand in scope.VRController) {
+		if (scope.VRController.hasOwnProperty(hand)) {
+				scope.VRScene.add( scope.VRController[hand] );
+				controller.head = scope.VRCamera;
+		}
 	}
+
+	// if (scope.VRController !== undefined) {
+	// 	scope.VRScene.add( scope.VRController );
+	// 	controller.head = scope.VRCamera;
+	// }
 	
 	if (!scope.supportsVR) {
 		scope.Controls = new THREE.OrbitControls( scope.VRCamera, scope.VRRenderer.domElement );
@@ -148,51 +155,58 @@ THREE.CommonClicker.Update = function () {
 	THREE.CommonClicker.PointerIntersect();
 }
 
-THREE.CommonClicker.PointerButtonDown = function(data, pointer, hand) {
+THREE.CommonClicker.PointerButtonDown = function(data, hand) {
 	var scope = THREE.CommonClicker;
 	
 	// scope.VRPointer.material.color.setHex( 0x99FF99 );
-	scope.VRPointer[pointer].userData.ray.visible = true;
-	scope.PointerDown = true;
+	scope.VRPointer[hand].userData.ray.visible = true;
+	scope.PointerDown[hand] = true;
 }
 
-THREE.CommonClicker.PointerButtonUp = function(data, pointer, hand) {
+THREE.CommonClicker.PointerButtonUp = function(data, hand) {
 	var scope = THREE.CommonClicker;
 	
 	// scope.VRPointer.material.color.setHex( 0xFF9999 );
-	scope.VRPointer[pointer].userData.ray.visible = false;
-	scope.PointerDown = false;
+	scope.VRPointer[hand].userData.ray.visible = false;
+	scope.PointerDown[hand] = false;
 }
 
 THREE.CommonClicker.PointerIntersect = function() {
 	var scope = THREE.CommonClicker;
-	if (scope.supportsVR) {
-		if (scope.VRController != undefined) {
-				// borrowed from DATGuiVR
-				const tPosition = new THREE.Vector3();
-				const tDirection = new THREE.Vector3( 0, 0, -1 );
-				const tMatrix = new THREE.Matrix4();
+	var objs = [];
+	var gotClick = false;
 
-				tPosition.set(0,0,0).setFromMatrixPosition( scope.VRController.matrixWorld );
-				tMatrix.identity().extractRotation( scope.VRController.matrixWorld );
-				tDirection.set(0,0,-1).applyMatrix4( tMatrix ).normalize();
-			  scope.Raycaster.set(tPosition,  tDirection);
+	for (var hand in scope.PointerDown) {
+		if (scope.PointerDown.hasOwnProperty(hand)) {
+			if (scope.PointerDown[hand] == true) {
+				gotClick = true;
+				if (scope.supportsVR) {
+					if (scope.VRController[hand] != undefined) {
+							// borrowed from DATGuiVR
+							const tPosition = new THREE.Vector3();
+							const tDirection = new THREE.Vector3( 0, 0, -1 );
+							const tMatrix = new THREE.Matrix4();
+
+							var mat = scope.VRController[hand].matrixWorld ;							
+							tPosition.set(0,0,0).setFromMatrixPosition( mat );
+							tMatrix.identity().extractRotation( mat );
+							tDirection.set(0,0,-1).applyMatrix4( tMatrix ).normalize();
+						  scope.Raycaster.set(tPosition,  tDirection);
+							objs = objs.concat(scope.Raycaster.intersectObjects( scope.InteractionTargets ));
+					}
+				} else {
+					scope.Raycaster.setFromCamera( scope.MousePos, scope.VRCamera );
+					objs = objs.concat(scope.Raycaster.intersectObjects( scope.InteractionTargets ));
+				}
+			}
 		}
-	} else {
-		scope.Raycaster.setFromCamera( scope.MousePos, scope.VRCamera );
-	}
-	
-	var objs = scope.Raycaster.intersectObjects( scope.InteractionTargets );
+	}			
 
 	for ( var i = 0; i < objs.length; i++ ) {
 		var obj = objs[ i ];
-		if (scope.PointerDown) {
+		if (gotClick) {
 			if (obj.object.userData.clickCallback != undefined)
 				obj.object.userData.clickCallback(obj.object);
-		} else {
-			// hover
-			if (obj.object.userData.hoverCallback != undefined)
-				obj.object.userData.hoverCallback(obj.object);
 		}
 	}
 	
@@ -203,13 +217,14 @@ window.addEventListener( 'vr controller connected', function( event ){
 	
 	// Controller is THREE.Object3D
 	var controller = event.detail;
+	var hand = controller.hand;
 
 	if (scope.VRScene !== undefined) {
 		scope.VRScene.add( controller );
 		controller.head = scope.VRCamera;
 	}
 	
-	scope.VRController = controller;
+	scope.VRController[hand] = controller;
 
 	if (!scope.isOculus){
 		controller.standingMatrix = renderer.vr.getStandingMatrix()
@@ -225,13 +240,11 @@ window.addEventListener( 'vr controller connected', function( event ){
 	}
 	controller.add( pointerMesh );
 
-	var hand = controller.hand;
 
 	controller.addEventListener( 'primary press began', function( event ){
 		var scope = THREE.CommonClicker;
 		scope.PointerButtonDown(event, hand);
 	})
-	
 	
 	controller.addEventListener( 'primary press ended', function( event ){
 		var scope = THREE.CommonClicker;
