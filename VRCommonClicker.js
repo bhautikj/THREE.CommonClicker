@@ -21,7 +21,7 @@ THREE.CommonClicker = function(){
 THREE.CommonClicker.prototype = Object.create( THREE.Object3D.prototype )
 THREE.CommonClicker.prototype.constructor = THREE.CommonClicker
 
-THREE.CommonClicker.isOculusGo = false;
+THREE.CommonClicker.isOculus = false;
 THREE.CommonClicker.Controls = undefined;
 THREE.CommonClicker.Raycaster = new THREE.Raycaster();
 THREE.CommonClicker.MousePos = new THREE.Vector2();
@@ -29,13 +29,13 @@ THREE.CommonClicker.VRController = undefined;
 THREE.CommonClicker.VRScene = undefined;
 THREE.CommonClicker.VRCamera = undefined;
 THREE.CommonClicker.VRRenderer = undefined;
-THREE.CommonClicker.VRPointer = undefined;
+THREE.CommonClicker.VRPointer = {};
 THREE.CommonClicker.InteractionTargets = [];
 THREE.CommonClicker.PointerDown = false;
 THREE.CommonClicker.SupportsVR = false;
 
-THREE.CommonClicker.CheckIfOculusGo = function() {
-	THREE.CommonClicker.isOculusGo = navigator.userAgent.includes('OculusBrowser');
+THREE.CommonClicker.CheckIfOculus = function() {
+	THREE.CommonClicker.isOculus = navigator.userAgent.includes('OculusBrowser');
 }
 
 THREE.CommonClicker.OnMouseMove = function( event ) {
@@ -57,12 +57,21 @@ THREE.CommonClicker.OnMouseUp = function( event ) {
 	scope.PointerDown = false;
 }
 
-THREE.CommonClicker.CreateVRPointer = function() {
+THREE.CommonClicker.CreateVRPointer = function(handedness) {
 	var rayLength = 30;
 	
-	var controllerMaterial = new THREE.MeshStandardMaterial({
-		color: 0xFF9999
-	});
+	var colorDict;
+	if (handedness == "left") {
+		colorDict = {color: 0xFF9999};
+	} else if (handedness = "right") {
+		colorDict = {color: 0x9999FF};
+	} else {
+		colorDict = {color: 0x99FF99};		
+	}
+	
+	var controllerMaterial = new THREE.MeshStandardMaterial(colorDict);
+	
+	
 	var controllerMesh = new THREE.Mesh(
 		new THREE.CylinderGeometry( 0.005, 0.05, 0.1, 6 ),
 		controllerMaterial
@@ -83,7 +92,7 @@ THREE.CommonClicker.CreateVRPointer = function() {
 	rayMesh.position.y = 0.5*rayLength;
 	controllerMesh.add( handleMesh );
 	controllerMesh.add( rayMesh );
-	
+		
 	rayMesh.visible = false;
 	controllerMesh.userData.ray = rayMesh;
 	return controllerMesh;
@@ -92,7 +101,7 @@ THREE.CommonClicker.CreateVRPointer = function() {
 THREE.CommonClicker.Init = function(scene, camera, renderer, enableVR) {
 	var scope = THREE.CommonClicker;
 	
-	scope.CheckIfOculusGo();
+	scope.CheckIfOculus();
  
 	if (navigator.getVRDisplays)
 		scope.supportsVR = true;
@@ -113,7 +122,7 @@ THREE.CommonClicker.Init = function(scene, camera, renderer, enableVR) {
 		scope.Controls.target.set( 0, 0, 1 );
 	} else {
 		// see: https://github.com/stewdio/THREE.VRController/pull/20/files?utf8=%E2%9C%93&diff=unified&w=1
-		if (!THREE.CommonClicker.isOculusGo)
+		if (!THREE.CommonClicker.isOculus)
 			scope.VRRenderer.vr.standing = true
 			
 		if (enableVR === undefined || enableVR == true) {
@@ -139,19 +148,19 @@ THREE.CommonClicker.Update = function () {
 	THREE.CommonClicker.PointerIntersect();
 }
 
-THREE.CommonClicker.PointerButtonDown = function(data, pointer) {
+THREE.CommonClicker.PointerButtonDown = function(data, pointer, hand) {
 	var scope = THREE.CommonClicker;
 	
-	scope.VRPointer.material.color.setHex( 0x99FF99 );
-	scope.VRPointer.userData.ray.visible = true;
+	// scope.VRPointer.material.color.setHex( 0x99FF99 );
+	scope.VRPointer[pointer].userData.ray.visible = true;
 	scope.PointerDown = true;
 }
 
-THREE.CommonClicker.PointerButtonUp = function(data, pointer) {
+THREE.CommonClicker.PointerButtonUp = function(data, pointer, hand) {
 	var scope = THREE.CommonClicker;
 	
-	scope.VRPointer.material.color.setHex( 0xFF9999 );
-	scope.VRPointer.userData.ray.visible = false;
+	// scope.VRPointer.material.color.setHex( 0xFF9999 );
+	scope.VRPointer[pointer].userData.ray.visible = false;
 	scope.PointerDown = false;
 }
 
@@ -202,22 +211,31 @@ window.addEventListener( 'vr controller connected', function( event ){
 	
 	scope.VRController = controller;
 
-	if (!scope.isOculusGo){
+	if (!scope.isOculus){
 		controller.standingMatrix = renderer.vr.getStandingMatrix()
 	} else {
 		if ( !controller.armModel ) controller.standingMatrix = renderer.vr.getStandingMatrix();
 	}
 
-	scope.VRPointer = THREE.CommonClicker.CreateVRPointer();	
-	controller.add( scope.VRPointer );
+	var pointerMesh = THREE.CommonClicker.CreateVRPointer(controller.hand);	
+	if (controller.hand == "right") {
+		scope.VRPointer["right"] = pointerMesh;
+	} else {
+		scope.VRPointer["left"] = pointerMesh;
+	}
+	controller.add( pointerMesh );
+
+	var hand = controller.hand;
 
 	controller.addEventListener( 'primary press began', function( event ){
 		var scope = THREE.CommonClicker;
-		scope.PointerButtonDown(event);
+		scope.PointerButtonDown(event, hand);
 	})
+	
+	
 	controller.addEventListener( 'primary press ended', function( event ){
 		var scope = THREE.CommonClicker;
-		scope.PointerButtonUp(event);
+		scope.PointerButtonUp(event, hand);
 	})
 
 	controller.addEventListener( 'disconnected', function( event ){

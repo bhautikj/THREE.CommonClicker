@@ -48,7 +48,8 @@
 		<script src="https://cdn.rawgit.com/mrdoob/three.js/r95/build/three.js"></script>
 		<script src="https://cdn.rawgit.com/mrdoob/three.js/r95/examples/js/vr/WebVR.js"></script>
 		<script src="https://cdn.rawgit.com/mrdoob/three.js/r95/examples/js/controls/OrbitControls.js"></script>
-		<script src="https://cdn.rawgit.com/stewdio/THREE.VRController/master/VRController.js"></script>
+		<!-- <script src="https://raw.githubusercontent.com/bhautikj/THREE.VRController/master/VRController.js"></script> -->
+		<script src="../THREE.VRController/VRController.js"></script>
 		
 		<script src="VRCommonClicker.js"></script>
 
@@ -56,7 +57,7 @@
 
 			var container = document.createElement( 'div' );
 			document.body.appendChild( container );
-			
+						
 			var supportsVR = false;
 			if (navigator.getVRDisplays)
 				supportsVR = true;
