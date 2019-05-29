@@ -49,9 +49,10 @@
 		<script src="https://cdn.rawgit.com/mrdoob/three.js/r95/examples/js/vr/WebVR.js"></script>
 		<script src="https://cdn.rawgit.com/mrdoob/three.js/r95/examples/js/controls/OrbitControls.js"></script>
 		<!-- <script src="https://raw.githubusercontent.com/bhautikj/THREE.VRController/master/VRController.js"></script> -->
-		<script src="../THREE.VRController/VRController.js"></script>
-		
+		<script src="../THREE.VRController/VRController.js"></script>		
+
 		<script src="VRCommonClicker.js"></script>
+		<script src="VRTextPanel.js"></script>
 
 		<script>			
 
@@ -90,6 +91,32 @@
 			
 			window.addEventListener( 'resize', onWindowResize, false );
 			
+			////
+			var canvas1 = document.createElement('canvas');
+			var context1 = canvas1.getContext('2d');
+			// context1.canvas.width  = 512;
+			// context1.canvas.height = 512;			  
+			context1.font = "Bold 40px Arial";
+			context1.fillStyle = "rgba(255,0,0,0.95)";
+			context1.clearRect(0, 0, canvas1.width, canvas1.height);
+			context1.fillText(Date.now(), 0, 50);
+			// canvas contents will be used for a texture
+			var texture1 = new THREE.CanvasTexture(canvas1)
+			texture1.needsUpdate = true;
+
+					    var material1 = new THREE.MeshBasicMaterial( {map: texture1, side:THREE.DoubleSide } );
+					    material1.transparent = true;
+
+					    var mesh1 = new THREE.Mesh(
+				// size: 1m width
+					        new THREE.PlaneGeometry(1.0,canvas1.height/canvas1.width),
+					        material1
+					      );
+			  mesh1.rotateY(Math.PI);
+			mesh1.position.set(0,0,1);
+			scene.add( mesh1 );
+			////
+			
 			var populateInteractionTargetsRandomly = function(num, scene) {
 				var scope = THREE.CommonClicker;
 				var MeshStandardMaterial = new THREE.MeshStandardMaterial({color: 0xFFEEEE});
@@ -118,6 +145,9 @@
 			var render = function () {
 				THREE.CommonClicker.Update();
 				renderer.render( scene, camera );
+				context1.clearRect(0, 0, canvas1.width, canvas1.height);
+				context1.fillText(Date.now(), 0, 50);
+				texture1.needsUpdate = true;
 			}
 
 			renderer.setAnimationLoop( render );
