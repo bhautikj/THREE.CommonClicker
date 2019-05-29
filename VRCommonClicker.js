@@ -73,6 +73,7 @@ THREE.CommonClicker.VRRenderer = undefined;
 THREE.CommonClicker.VRPointer = {};
 THREE.CommonClicker.InteractionTargets = [];
 THREE.CommonClicker.PointerDown = {};
+THREE.CommonClicker.TextPanel = new THREE.TextPanel([""], "rgba(0,0,0,0.95)");
 THREE.CommonClicker.SupportsVR = false;
 
 THREE.CommonClicker.CheckIfOculus = function() {
@@ -159,15 +160,15 @@ THREE.CommonClicker.Init = function(scene, camera, renderer, enableVR) {
 				controller.head = scope.VRCamera;
 		}
 	}
-
-	// if (scope.VRController !== undefined) {
-	// 	scope.VRScene.add( scope.VRController );
-	// 	controller.head = scope.VRCamera;
-	// }
 	
 	if (!scope.supportsVR) {
+		scope.VRScene.add(scope.VRCamera);
 		scope.Controls = new THREE.OrbitControls( scope.VRCamera, scope.VRRenderer.domElement );
 		scope.Controls.target.set( 0, 0, 1 );
+		var textMesh = scope.TextPanel.GetMesh();
+		textMesh.rotateY(Math.PI);
+		scope.VRCamera.add(textMesh);
+		textMesh.position.set(0,0.25,-1);
 	} else {
 		// see: https://github.com/stewdio/THREE.VRController/pull/20/files?utf8=%E2%9C%93&diff=unified&w=1
 		if (!THREE.CommonClicker.isOculus)
@@ -182,6 +183,12 @@ THREE.CommonClicker.Init = function(scene, camera, renderer, enableVR) {
 	window.addEventListener( 'mousemove', THREE.CommonClicker.OnMouseMove, false );
 	window.addEventListener( 'mousedown', THREE.CommonClicker.OnMouseDown, false );
 	window.addEventListener( 'mouseup', THREE.CommonClicker.OnMouseUp, false );
+}
+
+
+THREE.CommonClicker.UpdateText = function (textArray) {
+	var scope = THREE.CommonClicker;
+	scope.TextPanel.RenderText(textArray);
 }
 
 THREE.CommonClicker.Update = function () {
