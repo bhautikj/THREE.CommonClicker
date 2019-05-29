@@ -1,0 +1,149 @@
+	<!-- Copyright 2019 Bhautik J Joshi bjoshi@gmail.com
+
+	Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+	documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+	rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+	permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+	Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+	WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
+	OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+	OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. -->
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Staging Test</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				font-family: Monospace;
+				background-color: #fff;
+				color: #000;
+				margin: 0px;
+				overflow: hidden;
+			}
+			#info {
+				color: #000;
+				position: absolute;
+				top: 10px;
+				width: 100%;
+				text-align: center;
+				display:block;
+			}
+			#info a, .button { color: #f00; font-weight: bold; text-decoration: underline; cursor: pointer }
+		</style>
+	</head>
+
+	<body>
+		<div id="info">
+		Shared Engine Test
+		</div>
+
+		<!-- common -->
+		<script src="https://cdn.rawgit.com/mrdoob/three.js/r95/build/three.js"></script>
+		<script src="https://cdn.rawgit.com/mrdoob/three.js/r95/examples/js/vr/WebVR.js"></script>
+		<script src="https://cdn.rawgit.com/mrdoob/three.js/r95/examples/js/controls/OrbitControls.js"></script>
+		<!-- <script src="https://raw.githubusercontent.com/bhautikj/THREE.VRController/master/VRController.js"></script> -->
+		<script src="../THREE.VRController/VRController.js"></script>		
+
+		<script src="VRCommonClicker.js"></script>
+
+		<script>			
+
+			var container = document.createElement( 'div' );
+			document.body.appendChild( container );
+						
+			var supportsVR = false;
+			if (navigator.getVRDisplays)
+				supportsVR = true;
+	
+			var camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 500 );
+			var scene = new THREE.Scene();
+	
+			if (!supportsVR)
+				scene.background = new THREE.Color( 0x111111 );
+			else
+				scene.background = new THREE.Color( 0x111111 );
+
+			var ambient = new THREE.AmbientLight( 0x666666 );
+			scene.add( ambient );
+
+		  var directionalLight = new THREE.DirectionalLight( 0x887766 );
+			directionalLight.position.set( - 1, 1, 1 ).normalize();
+			scene.add( this.directionalLight );
+			
+			var renderer = new THREE.WebGLRenderer( { antialias: true } );
+			renderer.setPixelRatio( window.devicePixelRatio );
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			container.appendChild( this.renderer.domElement );
+			
+			//grid
+			var grid = new THREE.GridHelper( 200, 10 );
+			grid.setColors( 0xffffff, 0xffffff );
+			scene.add( grid );
+			scene.fog = new THREE.FogExp2( 0x000000, 0.0128 );
+			renderer.setClearColor( scene.fog.color, 1 );
+			
+			//stage
+			var geometry = new THREE.PlaneGeometry( 50, 20, 32, 32 );
+			var material = new THREE.MeshPhongMaterial( {color: 0x050505, side: THREE.DoubleSide} );
+			var plane = new THREE.Mesh( geometry, material );
+			plane.rotateX(Math.PI*0.5);
+			plane.translateY(10);
+			scene.add( plane );
+			
+			
+			
+			var onWindowResize = function() {
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+			}
+			
+			window.addEventListener( 'resize', onWindowResize, false );
+			
+			var populateInteractionTargetsRandomly = function(num, scene) {
+				var scope = THREE.CommonClicker;
+				var MeshStandardMaterial = new THREE.MeshStandardMaterial({color: 0xFFEEEE});
+
+				for ( var i = 0; i < num; i++ ) {
+					var cubeMesh = new THREE.Mesh(
+						new THREE.BoxGeometry( 0.5, 0.5, 0.5 ),
+						new THREE.MeshStandardMaterial({color: 0xFFEEEE})
+					);
+					cubeMesh.position.x = Math.random() * 10 - 5;
+					cubeMesh.position.y = Math.random() * 10 ;
+					cubeMesh.position.z = Math.random() * 10 - 5;
+					scope.InteractionTargets.push(cubeMesh);
+					scene.add(cubeMesh);
+		
+					cubeMesh.userData.clickCallback = function(obj) {
+						obj.material.color.setHex( 0x99FF99 );
+					};
+				}	
+			}
+
+			populateInteractionTargetsRandomly (40, scene);
+
+			THREE.CommonClicker.Init(scene, camera, renderer);			
+
+			var render = function () {
+				var pos = THREE.CommonClicker.VRCamera.position;
+				var posString = "[L/R:" + (-1.0*pos.x).toFixed(1) + ", Height:" + pos.y.toFixed(1) + ", F/B:" + pos.z.toFixed(1) +"]"
+				
+				THREE.CommonClicker.UpdateText([posString]); 
+				THREE.CommonClicker.Update();
+				renderer.render( scene, camera );
+			}
+
+			renderer.setAnimationLoop( render );
+
+		</script>
+
+	</body>
+</html>
