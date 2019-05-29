@@ -15,16 +15,17 @@
 	OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-THREE.TextPanel = function(initTextArray, colorString){
-	this.txSize = 14;
+THREE.TextPanel = function(initTextArray){
+	this.txSize = 28;
 	this.txHeight = this.txSize  + 4;
 	this.canvas1 = document.createElement('canvas');
-	this.canvas1.width = 256;
-	this.canvas1.height = 64;
+	this.canvas1.width = 512;
+	this.canvas1.height = 128;
 	this.context1 = this.canvas1.getContext('2d');
-	//this.context1.font = "Bold 32px Arial";
 	this.context1.font = this.txSize + "px/1.4 arial, sans-serif";
-	this.context1.fillStyle = colorString;
+	this.context1.strokeStyle = 'black';
+	this.context1.fillStyle = 'white';
+	this.context1.lineWidth = 6;
 		
 	this.texture1 = new THREE.Texture(this.canvas1)
 
@@ -46,6 +47,7 @@ THREE.TextPanel.prototype.constructor = THREE.TextPanel
 THREE.TextPanel.prototype.RenderText = function(textArray) {
 	this.context1.clearRect(0, 0, this.canvas1.width, this.canvas1.height);
 	for (var i = 0; i < textArray.length; i++) {
+		this.context1.strokeText(textArray[i], 0, this.txHeight + i*this.txHeight);
 		this.context1.fillText(textArray[i], 0, this.txHeight + i*this.txHeight);
 	}
 	this.texture1.needsUpdate = true;
@@ -73,7 +75,7 @@ THREE.CommonClicker.VRRenderer = undefined;
 THREE.CommonClicker.VRPointer = {};
 THREE.CommonClicker.InteractionTargets = [];
 THREE.CommonClicker.PointerDown = {};
-THREE.CommonClicker.TextPanel = new THREE.TextPanel([""], "rgba(0,0,0,0.5)");
+THREE.CommonClicker.TextPanel = new THREE.TextPanel([""]);
 THREE.CommonClicker.SupportsVR = false;
 
 THREE.CommonClicker.CheckIfOculus = function() {
