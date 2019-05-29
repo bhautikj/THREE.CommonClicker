@@ -83,6 +83,11 @@
 			renderer.setSize( window.innerWidth, window.innerHeight );
 			container.appendChild( this.renderer.domElement );
 			
+			var textPanel = new THREE.TextPanel([""], "rgba(0,0,0,0.95)");
+			var textMesh = textPanel.GetMesh();
+			textMesh.position.set(0,0,1);
+			scene.add(textMesh);
+			
 			var onWindowResize = function() {
 				camera.aspect = window.innerWidth / window.innerHeight;
 				camera.updateProjectionMatrix();
@@ -90,32 +95,6 @@
 			}
 			
 			window.addEventListener( 'resize', onWindowResize, false );
-			
-			////
-			var canvas1 = document.createElement('canvas');
-			var context1 = canvas1.getContext('2d');
-			// context1.canvas.width  = 512;
-			// context1.canvas.height = 512;			  
-			context1.font = "Bold 40px Arial";
-			context1.fillStyle = "rgba(255,0,0,0.95)";
-			context1.clearRect(0, 0, canvas1.width, canvas1.height);
-			context1.fillText(Date.now(), 0, 50);
-			// canvas contents will be used for a texture
-			var texture1 = new THREE.CanvasTexture(canvas1)
-			texture1.needsUpdate = true;
-
-					    var material1 = new THREE.MeshBasicMaterial( {map: texture1, side:THREE.DoubleSide } );
-					    material1.transparent = true;
-
-					    var mesh1 = new THREE.Mesh(
-				// size: 1m width
-					        new THREE.PlaneGeometry(1.0,canvas1.height/canvas1.width),
-					        material1
-					      );
-			  mesh1.rotateY(Math.PI);
-			mesh1.position.set(0,0,1);
-			scene.add( mesh1 );
-			////
 			
 			var populateInteractionTargetsRandomly = function(num, scene) {
 				var scope = THREE.CommonClicker;
@@ -143,11 +122,9 @@
 			THREE.CommonClicker.Init(scene, camera, renderer);			
 
 			var render = function () {
+				textPanel.RenderText([Date.now(), Date.now(), Date.now()]);
 				THREE.CommonClicker.Update();
 				renderer.render( scene, camera );
-				context1.clearRect(0, 0, canvas1.width, canvas1.height);
-				context1.fillText(Date.now(), 0, 50);
-				texture1.needsUpdate = true;
 			}
 
 			renderer.setAnimationLoop( render );
