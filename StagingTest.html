@@ -107,28 +107,33 @@
 			
 			window.addEventListener( 'resize', onWindowResize, false );
 			
-			var populateInteractionTargetsRandomly = function(num, scene) {
-				var scope = THREE.CommonClicker;
-				var MeshStandardMaterial = new THREE.MeshStandardMaterial({color: 0xFFEEEE});
+			// var populateInteractionTargetsRandomly = function(num, scene) {
+			// 	var scope = THREE.CommonClicker;
+			// 	var MeshStandardMaterial = new THREE.MeshStandardMaterial({color: 0xFFEEEE});
+			//
+			// 	for ( var i = 0; i < num; i++ ) {
+			// 		var cubeMesh = new THREE.Mesh(
+			// 			new THREE.BoxGeometry( 0.5, 0.5, 0.5 ),
+			// 			new THREE.MeshStandardMaterial({color: 0xFFEEEE})
+			// 		);
+			// 		cubeMesh.position.x = Math.random() * 10 - 5;
+			// 		cubeMesh.position.y = Math.random() * 10 ;
+			// 		cubeMesh.position.z = Math.random() * 10 - 5;
+			// 		scope.InteractionTargets.push(cubeMesh);
+			// 		scene.add(cubeMesh);
+			//
+			// 		cubeMesh.userData.clickCallback = function(obj) {
+			// 			obj.material.color.setHex( 0x99FF99 );
+			// 		};
+			// 	}
+			// }
+			//
+			// populateInteractionTargetsRandomly (40, scene);
 
-				for ( var i = 0; i < num; i++ ) {
-					var cubeMesh = new THREE.Mesh(
-						new THREE.BoxGeometry( 0.5, 0.5, 0.5 ),
-						new THREE.MeshStandardMaterial({color: 0xFFEEEE})
-					);
-					cubeMesh.position.x = Math.random() * 10 - 5;
-					cubeMesh.position.y = Math.random() * 10 ;
-					cubeMesh.position.z = Math.random() * 10 - 5;
-					scope.InteractionTargets.push(cubeMesh);
-					scene.add(cubeMesh);
-		
-					cubeMesh.userData.clickCallback = function(obj) {
-						obj.material.color.setHex( 0x99FF99 );
-					};
-				}	
-			}
-
-			populateInteractionTargetsRandomly (40, scene);
+			THREE.CommonClicker.AddPanelButton(["SceneA"], 0, function(mesh) { console.log("sceneA"); });
+			THREE.CommonClicker.AddPanelButton(["SceneB"], 1, function(mesh) { console.log("sceneB"); });
+			THREE.CommonClicker.AddPanelButton(["SceneC"], 2, function(mesh) { console.log("sceneC"); });
+			THREE.CommonClicker.AddPanelButton(["SceneD"], 3, function(mesh) { console.log("sceneD"); });
 
 			THREE.CommonClicker.Init(scene, camera, renderer);			
 

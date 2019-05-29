@@ -15,8 +15,8 @@
 	OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-THREE.TextPanel = function(initTextArray){
-	this.txSize = 28;
+THREE.TextPanel = function(initTextArray, textSize){
+	this.txSize = textSize;
 	this.txHeight = this.txSize  + 4;
 	this.canvas1 = document.createElement('canvas');
 	this.canvas1.width = 512;
@@ -57,6 +57,29 @@ THREE.TextPanel.prototype.GetMesh = function(text) {
 	return this.mesh1;
 }
 
+THREE.ButtonCube = function(buttonTextArray, callback){
+	var textPanel = new THREE.TextPanel([buttonTextArray], 128);
+	var textPanelMesh = textPanel.GetMesh();
+	this.cubeMesh = new THREE.Mesh(
+						new THREE.BoxGeometry( 1.0, 1.0, 1.0 ),
+						new THREE.MeshStandardMaterial({color: 0xEEFFFF})
+					);
+	textPanelMesh.translateZ(0.55);
+	textPanelMesh.translateY(0.4);
+	this.cubeMesh.add(textPanelMesh);
+	
+	THREE.CommonClicker.InteractionTargets.push(this.cubeMesh);
+	
+	this.cubeMesh.userData.clickCallback = callback;
+	// eg function(obj) { obj.material.color.setHex( 0x99FF99 ); };
+}
+
+THREE.ButtonCube.prototype.constructor = THREE.ButtonCube
+
+THREE.ButtonCube.prototype.GetMesh = function(text) {
+	return this.cubeMesh;
+}
+
 
 THREE.CommonClicker = function(){
 };
@@ -75,7 +98,7 @@ THREE.CommonClicker.VRRenderer = undefined;
 THREE.CommonClicker.VRPointer = {};
 THREE.CommonClicker.InteractionTargets = [];
 THREE.CommonClicker.PointerDown = {};
-THREE.CommonClicker.TextPanel = new THREE.TextPanel([""]);
+THREE.CommonClicker.TextPanel = new THREE.TextPanel([""], 28);
 THREE.CommonClicker.SupportsVR = false;
 
 THREE.CommonClicker.CheckIfOculus = function() {
@@ -170,7 +193,7 @@ THREE.CommonClicker.Init = function(scene, camera, renderer, enableVR) {
 		var textMesh = scope.TextPanel.GetMesh();
 		textMesh.rotateY(Math.PI);
 		scope.VRCamera.add(textMesh);
-		textMesh.position.set(0,0.25,-1);
+		textMesh.position.set(0,0.5,-2);
 	} else {
 		// see: https://github.com/stewdio/THREE.VRController/pull/20/files?utf8=%E2%9C%93&diff=unified&w=1
 		if (!THREE.CommonClicker.isOculus)
@@ -219,6 +242,17 @@ THREE.CommonClicker.PointerButtonUp = function(data, hand) {
 	// scope.VRPointer.material.color.setHex( 0xFF9999 );
 	scope.VRPointer[hand].userData.ray.visible = false;
 	scope.PointerDown[hand] = false;
+}
+
+THREE.CommonClicker.AddPanelButton = function(buttonTextArray, buttonIndex, callback) {
+	var scope = THREE.CommonClicker;
+	var buttonCube = new THREE.ButtonCube(buttonTextArray, callback);
+	buttonCubeMesh = buttonCube.GetMesh();
+	buttonCubeMesh.rotateY(Math.PI);
+	buttonCubeMesh.scale.set(0.15, 0.15, 0.15);
+	buttonCubeMesh.translateX(0.5  - 0.25*buttonIndex);
+	buttonCubeMesh.translateY(-0.5);
+	scope.TextPanel.GetMesh().add(buttonCubeMesh);
 }
 
 THREE.CommonClicker.PointerIntersect = function() {
