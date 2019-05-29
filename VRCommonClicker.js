@@ -73,7 +73,7 @@ THREE.CommonClicker.VRRenderer = undefined;
 THREE.CommonClicker.VRPointer = {};
 THREE.CommonClicker.InteractionTargets = [];
 THREE.CommonClicker.PointerDown = {};
-THREE.CommonClicker.TextPanel = new THREE.TextPanel([""], "rgba(0,0,0,0.95)");
+THREE.CommonClicker.TextPanel = new THREE.TextPanel([""], "rgba(0,0,0,0.5)");
 THREE.CommonClicker.SupportsVR = false;
 
 THREE.CommonClicker.CheckIfOculus = function() {
@@ -157,7 +157,7 @@ THREE.CommonClicker.Init = function(scene, camera, renderer, enableVR) {
 	for (var hand in scope.VRController) {
 		if (scope.VRController.hasOwnProperty(hand)) {
 				scope.VRScene.add( scope.VRController[hand] );
-				controller.head = scope.VRCamera;
+				scope.VRController[hand].head = scope.VRCamera;
 		}
 	}
 	
@@ -287,6 +287,13 @@ window.addEventListener( 'vr controller connected', function( event ){
 		scope.VRPointer["left"] = pointerMesh;
 	}
 	controller.add( pointerMesh );
+	
+	if (hand == "left") {
+		var textMesh = scope.TextPanel.GetMesh();
+		textMesh.rotateY(Math.PI);
+		scope.VRPointer["left"].add(textMesh);
+		textMesh.position.set(0,0.25,-1);
+	}
 
 
 	controller.addEventListener( 'primary press began', function( event ){
