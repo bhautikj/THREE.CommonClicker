@@ -15,47 +15,7 @@
 	OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-THREE.TextPanel = function(initTextArray, textSize){
-	this.txSize = textSize;
-	this.txHeight = this.txSize  + 4;
-	this.canvas1 = document.createElement('canvas');
-	this.canvas1.width = 512;
-	this.canvas1.height = 128;
-	this.context1 = this.canvas1.getContext('2d');
-	this.context1.font = this.txSize + "px/1.4 arial, sans-serif";
-	this.context1.strokeStyle = 'black';
-	this.context1.fillStyle = 'white';
-	this.context1.lineWidth = 6;
-		
-	this.texture1 = new THREE.Texture(this.canvas1)
 
-	this.RenderText(initTextArray);
-
-	this.material1 = new THREE.MeshBasicMaterial( {map: this.texture1, side:THREE.DoubleSide } );
-	this.material1.transparent = true;
-
-	this.mesh1 = new THREE.Mesh(
-		// size: 1m width
-	    new THREE.PlaneGeometry(1.0,this.canvas1.height/this.canvas1.width),
-	    this.material1
-	);
-	this.mesh1.rotateY(Math.PI);
-};
-
-THREE.TextPanel.prototype.constructor = THREE.TextPanel
-
-THREE.TextPanel.prototype.RenderText = function(textArray) {
-	this.context1.clearRect(0, 0, this.canvas1.width, this.canvas1.height);
-	for (var i = 0; i < textArray.length; i++) {
-		this.context1.strokeText(textArray[i], 0, this.txHeight + i*this.txHeight);
-		this.context1.fillText(textArray[i], 0, this.txHeight + i*this.txHeight);
-	}
-	this.texture1.needsUpdate = true;
-}
-
-THREE.TextPanel.prototype.GetMesh = function(text) {
-	return this.mesh1;
-}
 
 THREE.ButtonCube = function(buttonTextArray, callback){
 	var textPanel = new THREE.TextPanel([buttonTextArray], 128);
@@ -98,6 +58,7 @@ THREE.CommonClicker.VRRenderer = undefined;
 THREE.CommonClicker.VRPointer = {};
 THREE.CommonClicker.InteractionTargets = [];
 THREE.CommonClicker.PointerDown = {};
+THREE.CommonClicker.PointerSelections = { 'left' : [], 'right' : [] };
 THREE.CommonClicker.TextPanel = new THREE.TextPanel([""], 28);
 THREE.CommonClicker.SupportsVR = false;
 
@@ -187,6 +148,7 @@ THREE.CommonClicker.Init = function(scene, camera, renderer, enableVR) {
 	}
 	
 	if (!scope.supportsVR) {
+		scope.VRCamera.rotateY(Math.PI);
 		scope.VRScene.add(scope.VRCamera);
 		scope.Controls = new THREE.OrbitControls( scope.VRCamera, scope.VRRenderer.domElement );
 		scope.Controls.target.set( 0, 0, 1 );
@@ -257,13 +219,13 @@ THREE.CommonClicker.AddPanelButton = function(buttonTextArray, buttonIndex, call
 
 THREE.CommonClicker.PointerIntersect = function() {
 	var scope = THREE.CommonClicker;
-	var objs = [];
-	var gotClick = false;
+	// var objs = [];
+	// var gotClick = false;
 
 	for (var hand in scope.PointerDown) {
 		if (scope.PointerDown.hasOwnProperty(hand)) {
 			if (scope.PointerDown[hand] == true) {
-				gotClick = true;
+				// gotClick = true;
 				if (scope.supportsVR) {
 					if (scope.VRController[hand] != undefined) {
 							// borrowed from DATGuiVR
@@ -276,23 +238,50 @@ THREE.CommonClicker.PointerIntersect = function() {
 							tMatrix.identity().extractRotation( mat );
 							tDirection.set(0,0,-1).applyMatrix4( tMatrix ).normalize();
 						  scope.Raycaster.set(tPosition,  tDirection);
-							objs = objs.concat(scope.Raycaster.intersectObjects( scope.InteractionTargets ));
+							scope.PointerSelections[hand] = [];
+							var objs = scope.Raycaster.intersectObjects( scope.InteractionTargets );
+							for ( var i = 0; i < objs.length; i++ ) {
+								var obj = objs[ i ];
+								if (obj.object.userData.clickCallback != undefined) {
+									scope.PointerSelections[hand].push(obj);
+								}
+							}
 					}
 				} else {
+					var hand = 'right';
 					scope.Raycaster.setFromCamera( scope.MousePos, scope.VRCamera );
-					objs = objs.concat(scope.Raycaster.intersectObjects( scope.InteractionTargets ));
+					scope.PointerSelections[hand] = [];
+					var objs = scope.Raycaster.intersectObjects( scope.InteractionTargets );
+					for ( var i = 0; i < objs.length; i++ ) {
+						var obj = objs[ i ];
+						if (obj.object.userData.clickCallback != undefined) {
+							scope.PointerSelections[hand].push(obj);
+						}
+					}
 				}
 			}
 		}
 	}			
 
-	for ( var i = 0; i < objs.length; i++ ) {
-		var obj = objs[ i ];
-		if (gotClick) {
-			if (obj.object.userData.clickCallback != undefined)
-				obj.object.userData.clickCallback(obj.object);
+	for (var hand in scope.PointerDown) {
+		if (scope.PointerDown.hasOwnProperty(hand)) {
+			if (scope.PointerDown[hand] == false) {
+				if (scope.PointerSelections[hand] != '') {
+					for ( var i = 0; i < scope.PointerSelections[hand].length; i++ ) {
+						scope.PointerSelections[hand][i].object.userData.clickCallback(scope.PointerSelections[hand][i].object);
+					}
+				}
+				scope.PointerSelections[hand] = [];
+			}
 		}
 	}
+	// for ( var i = 0; i < objs.length; i++ ) {
+	// 	var obj = objs[ i ];
+	// 	if (gotClick) {
+	// 		if (obj.object.userData.clickCallback != undefined)
+	// 			obj.object.userData.clickCallback(obj.object);
+	// 	}
+	// }
 	
 }
 

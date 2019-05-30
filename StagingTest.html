@@ -51,7 +51,9 @@
 		<!-- <script src="https://raw.githubusercontent.com/bhautikj/THREE.VRController/master/VRController.js"></script> -->
 		<script src="../THREE.VRController/VRController.js"></script>		
 
+		<script src="VRTextPanel.js"></script>
 		<script src="VRCommonClicker.js"></script>
+		<script src="VRSceneStager.js"></script>
 
 		<script>			
 
@@ -73,7 +75,7 @@
 			var ambient = new THREE.AmbientLight( 0x666666 );
 			scene.add( ambient );
 
-		  	var directionalLight = new THREE.DirectionalLight( 0x887766 );
+		  var directionalLight = new THREE.DirectionalLight( 0x887766 );
 			directionalLight.position.set( - 1, 1, 1 ).normalize();
 			scene.add( this.directionalLight );
 			
@@ -97,8 +99,10 @@
 			plane.translateY(10);
 			scene.add( plane );
 			
-			
-			
+			//stage manager
+			var stageManager = new THREE.SceneStager(scene);
+			// stageManager.AddUnitCube(0.0, 2.0);
+
 			var onWindowResize = function() {
 				camera.aspect = window.innerWidth / window.innerHeight;
 				camera.updateProjectionMatrix();
@@ -107,10 +111,33 @@
 			
 			window.addEventListener( 'resize', onWindowResize, false );
 			
-			THREE.CommonClicker.AddPanelButton(["SceneA"], 0, function(mesh) { console.log("sceneA"); });
-			THREE.CommonClicker.AddPanelButton(["SceneB"], 1, function(mesh) { console.log("sceneB"); });
-			THREE.CommonClicker.AddPanelButton(["SceneC"], 2, function(mesh) { console.log("sceneC"); });
-			THREE.CommonClicker.AddPanelButton(["SceneD"], 3, function(mesh) { console.log("sceneD"); });
+			// need a manager to reset/refresh objects in a scene
+			
+			THREE.CommonClicker.AddPanelButton(["Human"], 0, function(mesh) { 
+				console.log("Human");
+				var pos = THREE.CommonClicker.VRCamera.position;
+				var vec = new THREE.Vector3( 0, 0, -2);
+				vec.applyQuaternion( THREE.CommonClicker.VRCamera.quaternion );
+				stageManager.AddHuman(pos.x + vec.x, pos.z + vec.z);
+			});
+			THREE.CommonClicker.AddPanelButton(["Hexapod"], 1, function(mesh) { 
+				console.log("Hexapod"); 
+				var pos = THREE.CommonClicker.VRCamera.position;
+				var vec = new THREE.Vector3( 0, 0, -2);
+				vec.applyQuaternion( THREE.CommonClicker.VRCamera.quaternion );
+				stageManager.AddHexapod(pos.x + vec.x, pos.z + vec.z);
+			});
+			THREE.CommonClicker.AddPanelButton(["Tensegrity"], 2, function(mesh) { 
+				console.log("sceneC"); 
+				var pos = THREE.CommonClicker.VRCamera.position;
+				var vec = new THREE.Vector3( 0, 0, -2);
+				vec.applyQuaternion( THREE.CommonClicker.VRCamera.quaternion );
+				stageManager.AddTensegrity(pos.x + vec.x, pos.z + vec.z);
+			});
+			THREE.CommonClicker.AddPanelButton(["Clear Stage"], 3, function(mesh) { 
+				console.log("Clear Stage"); 
+				stageManager.ClearStage();
+			});
 
 			THREE.CommonClicker.Init(scene, camera, renderer);			
 
