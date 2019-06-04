@@ -55,7 +55,7 @@ THREE.CommonClicker.VRController = {};
 THREE.CommonClicker.VRScene = undefined;
 THREE.CommonClicker.VRCamera = undefined;
 THREE.CommonClicker.VRRenderer = undefined;
-THREE.CommonClicker.VRPointer = {};
+THREE.CommonClicker.VRPointer = { "left": undefined, "right": undefined };
 THREE.CommonClicker.InteractionTargets = [];
 THREE.CommonClicker.PointerDown = {};
 THREE.CommonClicker.PointerSelections = { 'left' : [], 'right' : [] };
@@ -292,6 +292,8 @@ window.addEventListener( 'vr controller connected', function( event ){
 	var controller = event.detail;
 	var hand = controller.hand;
 
+	document.getElementById("info").innerText += "\n" + hand + " CONNECTED";
+
 	if (scope.VRScene !== undefined) {
 		scope.VRScene.add( controller );
 		controller.head = scope.VRCamera;
@@ -305,13 +307,11 @@ window.addEventListener( 'vr controller connected', function( event ){
 		if ( !controller.armModel ) controller.standingMatrix = renderer.vr.getStandingMatrix();
 	}
 
-	var pointerMesh = THREE.CommonClicker.CreateVRPointer(controller.hand);	
-	if (controller.hand == "right") {
-		scope.VRPointer["right"] = pointerMesh;
-	} else {
-		scope.VRPointer["left"] = pointerMesh;
+	
+	if (scope.VRPointer[hand] == undefined) {
+		scope.VRPointer[hand] = THREE.CommonClicker.CreateVRPointer(controller.hand);
+		controller.add (scope.VRPointer[hand]);
 	}
-	controller.add( pointerMesh );
 	
 	if (hand == "left") {
 		var textMesh = scope.TextPanel.GetMesh();
@@ -332,12 +332,29 @@ window.addEventListener( 'vr controller connected', function( event ){
 	})
 
 	controller.addEventListener( 'disconnected', function( event ){
+		document.getElementById("info").innerText += "\n" + hand + " DISCONNECTED VIA CONTROLLER";
 		var scope = THREE.CommonClicker;
+	  controller.remove(scope.VRPointer[hand]);
 		if (scope.VRScene === undefined)
 			return;
-		controller.parent.remove( controller )
+		scope.VRScene.remove(scope.VRPointer[hand]);
+		
 	})
 
 })
 
+window.addEventListener( 'vr controller disconnected', function( event ){
+	var scope = THREE.CommonClicker;
+	
+	// Controller is THREE.Object3D
+	var controller = event.detail;
+	var hand = controller.hand;
+
+	document.getElementById("info").innerText += "\n" + hand + " DISCONNECTED OUTRIGHT";
+
+	if (scope.VRScene === undefined)
+		return;
+
+  controller.remove(scope.VRPointer[hand]);
+})
 
