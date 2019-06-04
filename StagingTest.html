@@ -92,12 +92,47 @@
 			renderer.setClearColor( scene.fog.color, 1 );
 			
 			//stage
-			var geometry = new THREE.PlaneGeometry( 50, 20, 32, 32 );
-			var material = new THREE.MeshPhongMaterial( {color: 0x050505, side: THREE.DoubleSide} );
-			var plane = new THREE.Mesh( geometry, material );
-			plane.rotateX(Math.PI*0.5);
-			plane.translateY(10);
-			scene.add( plane );
+			var stageWidth = 7;
+			var stageDepth = 8;
+			var stageHeight = 5;
+
+			var stagePlane = new THREE.Mesh( new THREE.PlaneGeometry( stageWidth, stageDepth, 32, 32 ) , 
+			                                 new THREE.MeshPhongMaterial( {color: 0x050505, side: THREE.DoubleSide} ) );
+			stagePlane.rotateX(Math.PI*0.5);
+			stagePlane.translateY(stageDepth*0.5);
+			scene.add( stagePlane );
+			
+			var stageRoof = new THREE.Mesh( new THREE.PlaneGeometry( stageWidth, stageDepth, 32, 32 ) , 
+			                                 new THREE.MeshPhongMaterial( {color: 0x0E0E11, side: THREE.DoubleSide} ) );
+			stageRoof.rotateX(Math.PI*0.5);
+			stageRoof.translateY(stageDepth*0.5);
+			stageRoof.translateZ(-1.0*stageHeight);
+			scene.add( stageRoof );
+
+			var stageLeft = new THREE.Mesh( new THREE.PlaneGeometry( stageDepth, stageHeight, 32, 32 ) , 
+			                                 new THREE.MeshPhongMaterial( {color: 0x050505, side: THREE.DoubleSide} ) );
+			stageLeft.rotateY(Math.PI*0.5);
+			stageLeft.translateY(stageHeight*0.5);
+			stageLeft.translateX(-0.5*stageDepth);
+			stageLeft.translateZ(0.5*stageWidth);
+			scene.add( stageLeft );
+
+			var stageRight = new THREE.Mesh( new THREE.PlaneGeometry( stageDepth, stageHeight, 32, 32 ) , 
+			                                 new THREE.MeshPhongMaterial( {color: 0x0E0E0E, side: THREE.DoubleSide} ) );
+			stageRight.rotateY(Math.PI*0.5);
+			stageRight.translateY(stageHeight*0.5);
+			stageRight.translateX(-0.5*stageDepth);
+			stageRight.translateZ(-0.5*stageWidth);
+			scene.add( stageRight );
+			
+			
+			var stageBack = new THREE.Mesh( new THREE.PlaneGeometry( stageWidth, stageHeight, 32, 32 ) , 
+			                                 new THREE.MeshPhongMaterial( {color: 0x051105, side: THREE.DoubleSide} ) );
+			// stageBack.rotateX(Math.PI*0.5);
+			stageBack.translateY(stageHeight*0.5);
+			stageBack.translateZ(stageDepth);
+			scene.add( stageBack );
+			
 			
 			//stage manager
 			var stageManager = new THREE.SceneStager(scene);
