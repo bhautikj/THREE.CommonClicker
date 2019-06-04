@@ -343,18 +343,9 @@ window.addEventListener( 'vr controller connected', function( event ){
 
 })
 
-window.addEventListener( 'vr controller disconnected', function( event ){
-	var scope = THREE.CommonClicker;
-	
-	// Controller is THREE.Object3D
-	var controller = event.detail;
-	var hand = controller.hand;
-
-	document.getElementById("info").innerText += "\n" + hand + " DISCONNECTED OUTRIGHT";
-
-	if (scope.VRScene === undefined)
-		return;
-
-  controller.remove(scope.VRPointer[hand]);
-})
-
+window.addEventListener('vrdisplayactivate', function () {  
+    var scope = THREE.CommonClicker;
+		if (scope.VRCamera != undefined) {
+			scope.VRCamera.rotateY(Math.PI);
+		}
+});  
