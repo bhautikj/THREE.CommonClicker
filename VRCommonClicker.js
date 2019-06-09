@@ -54,6 +54,9 @@ THREE.CommonClicker.MousePos = new THREE.Vector2();
 THREE.CommonClicker.VRController = {};
 THREE.CommonClicker.VRScene = undefined;
 THREE.CommonClicker.VRCamera = undefined;
+// THREE.CommonClicker.VRCameraDolly = new THREE.Object3D();
+// THREE.CommonClicker.VRCameraDolly.position.set( 0, 0, 0 );
+// THREE.CommonClicker.VRScene.add( THREE.CommonClicker.VRCameraDolly );
 THREE.CommonClicker.VRRenderer = undefined;
 THREE.CommonClicker.VRPointer = { "left": undefined, "right": undefined };
 THREE.CommonClicker.InteractionTargets = [];
@@ -61,6 +64,7 @@ THREE.CommonClicker.PointerDown = {};
 THREE.CommonClicker.PointerSelections = { 'left' : [], 'right' : [] };
 THREE.CommonClicker.TextPanel = new THREE.TextPanel([""], 28);
 THREE.CommonClicker.SupportsVR = false;
+THREE.CommonClicker.InVR = false;
 
 THREE.CommonClicker.CheckIfOculus = function() {
 	THREE.CommonClicker.isOculus = navigator.userAgent.includes('OculusBrowser');
@@ -164,6 +168,7 @@ THREE.CommonClicker.Init = function(scene, camera, renderer, enableVR) {
 		if (enableVR === undefined || enableVR == true) {
 			scope.VRRenderer.vr.enabled  = true;
 			document.body.appendChild( WEBVR.createButton( scope.VRRenderer ) );
+			scope.VRCamera.rotateY(Math.PI);
 		}
 	}
 
@@ -215,6 +220,36 @@ THREE.CommonClicker.AddPanelButton = function(buttonTextArray, buttonIndex, call
 	buttonCubeMesh.translateX(0.5  - 0.25*buttonIndex);
 	buttonCubeMesh.translateY(-0.5);
 	scope.TextPanel.GetMesh().add(buttonCubeMesh);
+}
+
+THREE.CommonClicker.EnterVR = function() {
+	
+}
+
+THREE.CommonClicker.ExitVR = function() {
+	
+}
+
+THREE.CommonClicker.IsInVR = function() {
+	var scope = THREE.CommonClicker;
+	if (scope.VRRenderer != undefined) {
+		return scope.VRRenderer.vr.isPresenting();
+	} else {
+		return false;
+	}
+}
+
+THREE.CommonClicker.CheckInVR = function() {
+	var scope = THREE.CommonClicker;
+	var currentState = scope.IsInVR();
+	if (currentState != scope.InVR) {
+		if (currentState == true) {
+			scope.EnterVR();
+		} else {
+			scope.ExitVR();
+		}
+		scope.InVR = currentState;
+	}
 }
 
 THREE.CommonClicker.PointerIntersect = function() {
@@ -342,10 +377,3 @@ window.addEventListener( 'vr controller connected', function( event ){
 	})
 
 })
-
-window.addEventListener('vrdisplayactivate', function () {  
-    var scope = THREE.CommonClicker;
-		if (scope.VRCamera != undefined) {
-			scope.VRCamera.rotateY(Math.PI);
-		}
-});  
