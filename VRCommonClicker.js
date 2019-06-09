@@ -54,9 +54,7 @@ THREE.CommonClicker.MousePos = new THREE.Vector2();
 THREE.CommonClicker.VRController = {};
 THREE.CommonClicker.VRScene = undefined;
 THREE.CommonClicker.VRCamera = undefined;
-// THREE.CommonClicker.VRCameraDolly = new THREE.Object3D();
-// THREE.CommonClicker.VRCameraDolly.position.set( 0, 0, 0 );
-// THREE.CommonClicker.VRScene.add( THREE.CommonClicker.VRCameraDolly );
+THREE.CommonClicker.VRDolly = undefined;
 THREE.CommonClicker.VRRenderer = undefined;
 THREE.CommonClicker.VRPointer = { "left": undefined, "right": undefined };
 THREE.CommonClicker.InteractionTargets = [];
@@ -141,9 +139,15 @@ THREE.CommonClicker.Init = function(scene, camera, renderer, enableVR) {
 		scope.supportsVR = false;
 
 	scope.VRScene = scene;
-	scope.VRCamera = camera;
 	scope.VRRenderer = renderer;
+	scope.VRDolly = new THREE.Object3D();
+	scope.VRCamera = camera;
+	
+	scope.VRDolly.add(scope.VRCamera);
+	
+	// TODO: fix z-axis issue: https://github.com/mrdoob/three.js/issues/13753
 
+	
 	for (var hand in scope.VRController) {
 		if (scope.VRController.hasOwnProperty(hand)) {
 				scope.VRScene.add( scope.VRController[hand] );
@@ -152,8 +156,9 @@ THREE.CommonClicker.Init = function(scene, camera, renderer, enableVR) {
 	}
 	
 	if (!scope.supportsVR) {
-		scope.VRCamera.rotateY(Math.PI);
-		scope.VRScene.add(scope.VRCamera);
+		scope.VRCamera.rotateY(Math.PI);		
+		scope.VRScene.add(scope.VRDolly);
+		// scope.VRDolly.rotateY(Math.PI);
 		scope.Controls = new THREE.OrbitControls( scope.VRCamera, scope.VRRenderer.domElement );
 		scope.Controls.target.set( 0, 0, 1 );
 		var textMesh = scope.TextPanel.GetMesh();
@@ -165,10 +170,25 @@ THREE.CommonClicker.Init = function(scene, camera, renderer, enableVR) {
 		if (!THREE.CommonClicker.isOculus)
 			scope.VRRenderer.vr.standing = true
 			
+		scope.VRScene.add(scope.VRDolly);
+		// not working - controls still in old orientation
+		// scope.VRDolly.rotateY(Math.PI);
+		
 		if (enableVR === undefined || enableVR == true) {
 			scope.VRRenderer.vr.enabled  = true;
-			document.body.appendChild( WEBVR.createButton( scope.VRRenderer ) );
-			scope.VRCamera.rotateY(Math.PI);
+			document.body.appendChild( WEBVR.createButton( scope.VRRenderer ) );	
+			// // try fixing pose here
+			// if(navigator.getVRDisplays) {
+			//   console.log('WebVR 1.1 supported');
+			//   // Then get the displays attached to the computer
+			//   navigator.getVRDisplays().then(function(displays) {
+			//     // If a display is available, use it to present the scene
+			//     if(displays.length > 0) {
+			//       vrDisplay = displays[0];
+			// 			vrDisplay.resetPose();
+			//     }
+			//   });
+			// }
 		}
 	}
 
@@ -191,7 +211,6 @@ THREE.CommonClicker.Update = function () {
 	}
 
 	THREE.VRController.update();
-
 	THREE.CommonClicker.PointerIntersect();
 }
 
@@ -332,6 +351,7 @@ window.addEventListener( 'vr controller connected', function( event ){
 	if (scope.VRScene !== undefined) {
 		scope.VRScene.add( controller );
 		controller.head = scope.VRCamera;
+		// controller.head = scope.VRDolly;
 	}
 	
 	scope.VRController[hand] = controller;

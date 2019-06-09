@@ -84,6 +84,8 @@
 			renderer.setSize( window.innerWidth, window.innerHeight );
 			container.appendChild( this.renderer.domElement );
 			
+			THREE.CommonClicker.Init(scene, camera, renderer);	
+			
 			//grid
 			var grid = new THREE.GridHelper( 200, 200 );
 			grid.setColors( 0xffffff, 0xffffff );
@@ -145,6 +147,8 @@
 			}
 			
 			window.addEventListener( 'resize', onWindowResize, false );
+
+
 			
 			// need a manager to reset/refresh objects in a scene
 			
@@ -174,15 +178,14 @@
 				stageManager.ClearStage();
 			});
 
-			THREE.CommonClicker.Init(scene, camera, renderer);			
 
 			var render = function () {
 				var pos = THREE.CommonClicker.VRCamera.position;
 				var posString = "[L/R:" + (-1.0*pos.x).toFixed(1) + ", Height:" + pos.y.toFixed(1) + ", F/B:" + pos.z.toFixed(1) +"]"
-				
 				THREE.CommonClicker.UpdateText([posString]); 
 				THREE.CommonClicker.Update();
-				renderer.render( scene, camera );
+				//renderer.render( scene, camera );
+				renderer.render( scene, THREE.CommonClicker.VRCamera );
 			}
 
 			//document.getElementById("info").innerText += "\nBLARGH";
