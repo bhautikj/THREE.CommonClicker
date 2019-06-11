@@ -177,18 +177,6 @@ THREE.CommonClicker.Init = function(scene, camera, renderer, enableVR) {
 		if (enableVR === undefined || enableVR == true) {
 			scope.VRRenderer.vr.enabled  = true;
 			document.body.appendChild( WEBVR.createButton( scope.VRRenderer ) );	
-			// // try fixing pose here
-			// if(navigator.getVRDisplays) {
-			//   console.log('WebVR 1.1 supported');
-			//   // Then get the displays attached to the computer
-			//   navigator.getVRDisplays().then(function(displays) {
-			//     // If a display is available, use it to present the scene
-			//     if(displays.length > 0) {
-			//       vrDisplay = displays[0];
-			// 			vrDisplay.resetPose();
-			//     }
-			//   });
-			// }
 		}
 	}
 
@@ -208,6 +196,9 @@ THREE.CommonClicker.Update = function () {
 	
   if (!scope.supportsVR) {
 		scope.Controls.update();
+	} else {
+		// tweak VR position	
+		//scope.VRCamera.rotation.y  += Math.PI;
 	}
 
 	THREE.VRController.update();
