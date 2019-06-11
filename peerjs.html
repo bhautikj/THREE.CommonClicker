@@ -25,18 +25,17 @@
 	</head>
 
 	<body>
-		<!-- <script src="http://cdn.peerjs.com/0.3/peer.js"></script> -->
 		<script src="https://unpkg.com/peerjs@1.0.0/dist/peerjs.min.js"></script>
-		<script src="https://rawgit.com/mrdoob/three.js/r85/build/three.js"></script>
+		<script src="https://cdn.rawgit.com/mrdoob/three.js/r95/build/three.js"></script>
 
 		<script src="js/networks/RemoteSync.js"></script>
 		<script src="js/networks/PeerJSClient.js"></script>
 		<script src="js/controls/FPControls.js"></script>
 
-		<script src="https://rawgit.com/mrdoob/three.js/r85/examples/js/effects/OutlineEffect.js"></script>
-		<script src="https://rawgit.com/mrdoob/three.js/r85/examples/js/controls/TransformControls.js"></script>
-		<script src="https://rawgit.com/mrdoob/three.js/r85/examples/js/Detector.js"></script>
-		<script src="https://rawgit.com/mrdoob/three.js/r85/examples/js/libs/stats.min.js"></script>
+		<script src="https://rawgit.com/mrdoob/three.js/r95/examples/js/effects/OutlineEffect.js"></script>
+		<script src="https://rawgit.com/mrdoob/three.js/r95/examples/js/controls/TransformControls.js"></script>
+		<script src="https://rawgit.com/mrdoob/three.js/r95/examples/js/Detector.js"></script>
+		<script src="https://rawgit.com/mrdoob/three.js/r95/examples/js/libs/stats.min.js"></script>
 
 		<script>
 
@@ -57,10 +56,6 @@
 				remoteSync = new THREE.RemoteSync(
 				  new THREE.PeerJSClient( {
 						key: ''
-				    // allowDiscovery: true,
-// 				    host: '192.168.0.249',
-// 				    port: 9000,
-// 				    path: '/mypapp'
 				  } )
 				);
 				

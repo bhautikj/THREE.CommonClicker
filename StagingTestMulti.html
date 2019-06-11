@@ -51,7 +51,16 @@
 		<!-- <script src="https://raw.githubusercontent.com/bhautikj/THREE.VRController/master/VRController.js"></script> -->
 		<script src="../THREE.VRController/VRController.js"></script>		
 
-		<script>						
+		<script src="VRTextPanel.js"></script>
+		<script src="VRCommonClicker.js"></script>
+		<script src="VRSceneStager.js"></script>
+
+
+		<!-- shared scene madness -->
+		<script src="https://unpkg.com/peerjs@1.0.0/dist/peerjs.min.js"></script>
+		<script src="js/networks/RemoteSync.js"></script>
+		<script src="js/networks/PeerJSClient.js"></script>
+		<script>			
 			var container = document.createElement( 'div' );
 			document.body.appendChild( container );
 						
@@ -61,6 +70,9 @@
 	
 			var camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 500 );
 			var scene = new THREE.Scene();
+	
+			var clientId;
+			var remoteSync;
 	
 			if (!supportsVR)
 				scene.background = new THREE.Color( 0x111111 );
