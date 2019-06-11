@@ -30,6 +30,11 @@ THREE.MultiSync.Init = function(scene, camera, mirrorRemoteCreateCallback) {
 	scope.camera = camera;
 }
 
+THREE.MultiSync.sync = function() {
+	var scope = THREE.MultiSync;
+	scope.remoteSync.sync();
+}
+
 THREE.MultiSync.SceneAddSharedObject = function( mesh ) {
 	var scope = THREE.MultiSync;
 	scope.addSharedObject(mesh);

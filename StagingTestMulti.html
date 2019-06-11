@@ -212,8 +212,7 @@
 
 
 			var render = function () {
-				
-				
+				THREE.MultiSync.sync();
 				var pos = THREE.CommonClicker.VRCamera.position;
 				var posString = "[L/R:" + (-1.0*pos.x).toFixed(1) + ", Height:" + pos.y.toFixed(1) + ", F/B:" + pos.z.toFixed(1) +"]"
 				THREE.CommonClicker.UpdateText([posString]); 
