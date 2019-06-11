@@ -13,7 +13,7 @@ THREE.MultiSync.Init = function(scene, camera, mirrorRemoteCreateCallback) {
 	var scope = THREE.MultiSync;
 	scope.remoteSync = new THREE.RemoteSync(
 												  new THREE.PeerJSClient( {
-														key: ''
+														// key: ''
 												  } )
 												);
 												
