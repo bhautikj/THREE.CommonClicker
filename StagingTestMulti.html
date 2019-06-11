@@ -41,7 +41,9 @@
 
 	<body>
 		<div id="info">
-		Shared Engine Test
+			<div id="your_id"></div>
+			<div id="link"></div>
+			<div id="message"></div>
 		</div>
 
 		<!-- common -->
@@ -60,6 +62,8 @@
 		<script src="https://unpkg.com/peerjs@1.0.0/dist/peerjs.min.js"></script>
 		<script src="js/networks/RemoteSync.js"></script>
 		<script src="js/networks/PeerJSClient.js"></script>
+		<script src="VRMultiSync.js"></script>
+		
 		<script>			
 			var container = document.createElement( 'div' );
 			document.body.appendChild( container );
@@ -71,8 +75,8 @@
 			var camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 500 );
 			var scene = new THREE.Scene();
 	
-			var clientId;
-			var remoteSync;
+			// var clientId;
+			// var remoteSync;
 	
 			if (!supportsVR)
 				scene.background = new THREE.Color( 0x111111 );
