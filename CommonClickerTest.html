@@ -48,15 +48,18 @@
 		<script src="https://cdn.rawgit.com/mrdoob/three.js/r95/build/three.js"></script>
 		<script src="https://cdn.rawgit.com/mrdoob/three.js/r95/examples/js/vr/WebVR.js"></script>
 		<script src="https://cdn.rawgit.com/mrdoob/three.js/r95/examples/js/controls/OrbitControls.js"></script>
-		<script src="https://cdn.rawgit.com/stewdio/THREE.VRController/master/VRController.js"></script>
-		
+		<!-- <script src="https://raw.githubusercontent.com/bhautikj/THREE.VRController/master/VRController.js"></script> -->
+		<script src="../THREE.VRController/VRController.js"></script>		
+
 		<script src="VRCommonClicker.js"></script>
+		<script src="VRTextPanel.js"></script>
+		<script src="VRSceneStager.js"></script>
 
 		<script>			
 
 			var container = document.createElement( 'div' );
 			document.body.appendChild( container );
-			
+						
 			var supportsVR = false;
 			if (navigator.getVRDisplays)
 				supportsVR = true;
@@ -80,6 +83,7 @@
 			renderer.setPixelRatio( window.devicePixelRatio );
 			renderer.setSize( window.innerWidth, window.innerHeight );
 			container.appendChild( this.renderer.domElement );
+			
 			
 			var onWindowResize = function() {
 				camera.aspect = window.innerWidth / window.innerHeight;
@@ -107,10 +111,6 @@
 					cubeMesh.userData.clickCallback = function(obj) {
 						obj.material.color.setHex( 0x99FF99 );
 					};
-
-					cubeMesh.userData.hoverCallback = function(obj) {
-						obj.material.color.setHex( 0x9999FF );
-					};
 				}	
 			}
 
@@ -119,6 +119,7 @@
 			THREE.CommonClicker.Init(scene, camera, renderer);			
 
 			var render = function () {
+				THREE.CommonClicker.UpdateText([Date.now()]); 
 				THREE.CommonClicker.Update();
 				renderer.render( scene, camera );
 			}
