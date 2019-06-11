@@ -95,8 +95,32 @@
 			renderer.setSize( window.innerWidth, window.innerHeight );
 			container.appendChild( this.renderer.domElement );
 			
-			THREE.CommonClicker.Init(scene, camera, renderer);	
 			
+			THREE.CommonClicker.Init(scene, camera, renderer);	
+			//stage manager
+			var stageManager = new THREE.SceneStager(scene);
+			// stageManager.AddUnitCube(0.0, 2.0);
+			
+			var creatorCallback = function(type) {
+				var mesh;
+
+				switch ( type ) {
+
+					case 'camera':
+						console.log('new camera');
+						mesh = new THREE.Mesh(
+								new THREE.BoxGeometry(0.2, 0.2, 0.2),
+								new THREE.MeshStandardMaterial({color: 0xFF00FF})
+							);
+						break;
+					default:
+						return;
+				}
+				return mesh;
+			};
+			
+			THREE.MultiSync.Init (scene, camera, creatorCallback);
+				
 			//grid
 			var grid = new THREE.GridHelper( 200, 200 );
 			grid.setColors( 0xffffff, 0xffffff );
@@ -147,9 +171,6 @@
 			scene.add( stageBack );
 			
 			
-			//stage manager
-			var stageManager = new THREE.SceneStager(scene);
-			// stageManager.AddUnitCube(0.0, 2.0);
 
 			var onWindowResize = function() {
 				camera.aspect = window.innerWidth / window.innerHeight;

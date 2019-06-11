@@ -48,7 +48,7 @@ THREE.MultiSync.onOpen = function( id ) {
 	scope.clientId = id;
 
 	document.getElementById( 'your_id' ).innerText = 'Your ID: ' + id;
-	document.getElementById( 'link' ).appendChild( createLink() );
+	document.getElementById( 'link' ).appendChild( scope.createLink() );
 	scope.remoteSync.addLocalObject( scope.camera, { type: 'camera' } );
 	scope.connectFromURL();
 }
@@ -72,7 +72,7 @@ THREE.MultiSync.connect = function( id ) {
 	}
 
 	var message = document.getElementById( 'message' );
-	showMessage( 'Connecting with ' + id );
+	scope.showMessage( 'Connecting with ' + id );
 	scope.remoteSync.connect( id );
 }
 
@@ -113,24 +113,7 @@ THREE.MultiSync.onReceive = function( data ) {
 THREE.MultiSync.onAdd = function( destId, objectId, info ) {
 	var scope = THREE.MultiSync;
 	var mesh = scope.mirrorRemoteCreateCallback(info.type)
-	
-	// var mesh;
-	//
-	// switch ( info.type ) {
-	//
-	// 	case 'camera':
-	// 		mesh = createModel( destId );
-	// 		break;
-	//
-	// 	case 'box':
-	// 		mesh = createBox();
-	// 		break;
-	//
-	// 	default:
-	// 		return;
-	//
-	// }
-	
+	console.log("created",mesh,"of type",info.type);
 	scope.scene.add( mesh );
 	scope.remoteSync.addRemoteObject( destId, objectId, mesh );
 }
@@ -148,7 +131,7 @@ THREE.MultiSync.createLink = function() {
 	var index = url.indexOf( '?' );
 	if ( index >= 0 ) url = url.slice( 0, index );
 
-	a.href = url + '?' + clientId;
+	a.href = url + '?' + scope.clientId;
 	a.text = 'Share this link';
 	a.target = '_blank';
 
