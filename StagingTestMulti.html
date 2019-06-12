@@ -58,7 +58,13 @@
 			<button onclick="MenuCreateTensegrity()">Tensegrity</button><br/>
 			<button onclick="MenuCreateMark()">Mark</button><br/>
 			<h4>Stage</h4>
+			<button onclick="MenuAct1A()">Act 1A</button><br/>
+			<button onclick="MenuAct1B()">Act 1B</button><br/>
+			<button onclick="MenuAct2()">Act 2</button><br/>
+			<button onclick="MenuAct3()">Act 3</button><br/>
+			<button onclick="MenuAct4()">Act 4</button><br/>
 			<button onclick="MenuClear()">Stage Clear</button><br/>
+			
 			
 		</div>
 
@@ -196,17 +202,17 @@
 				var pos = THREE.CommonClicker.VRCamera.position;
 				var vec = new THREE.Vector3( 0, 0, -2);
 				vec.applyQuaternion( THREE.CommonClicker.VRCamera.quaternion );
-				var mesh = stageManager.CreateHumanMesh(pos.x + vec.x, pos.z + vec.z);	
-				if (THREE.MultiSync != undefined) {
-					THREE.MultiSync.SceneAddLocalObject(mesh, {type: 'human', x:pos.x + vec.x, z:pos.z + vec.z});
-					multiSyncLocals.push(mesh);
-				} else {
-					scene.add(mesh);
-				}
+				CreateHuman(pos.x + vec.x, pos.z + vec.z);
 			};
 			
 			var CreateHuman = function(x,z) {
-				
+				var mesh = stageManager.CreateHumanMesh(x, z);	
+				if (THREE.MultiSync != undefined) {
+					THREE.MultiSync.SceneAddLocalObject(mesh, {type: 'human', 'x':x, 'z':z});
+					multiSyncLocals.push(mesh);
+				} else {
+					scene.add(mesh);
+				}				
 			}
 			
 			var MenuCreateHexapod = function() {
@@ -214,9 +220,13 @@
 				var pos = THREE.CommonClicker.VRCamera.position;
 				var vec = new THREE.Vector3( 0, 0, -2);
 				vec.applyQuaternion( THREE.CommonClicker.VRCamera.quaternion );
-				var mesh = stageManager.CreateHexapod(pos.x + vec.x, pos.z + vec.z);	
+				CreateHexapod(pos.x + vec.x, pos.z + vec.z);
+			}
+
+			var CreateHexapod = function(x, z) {
+				var mesh = stageManager.CreateHexapod(x, z);	
 				if (THREE.MultiSync != undefined) {
-					THREE.MultiSync.SceneAddLocalObject(mesh, {type: 'hexapod', x:pos.x + vec.x, z:pos.z + vec.z});
+					THREE.MultiSync.SceneAddLocalObject(mesh, {type: 'hexapod', 'x':x, 'z':z});
 					multiSyncLocals.push(mesh);
 				} else {
 					scene.add(mesh);
@@ -228,9 +238,13 @@
 				var pos = THREE.CommonClicker.VRCamera.position;
 				var vec = new THREE.Vector3( 0, 0, -2);
 				vec.applyQuaternion( THREE.CommonClicker.VRCamera.quaternion );
-				var mesh = stageManager.CreateTensegrity(pos.x + vec.x, pos.z + vec.z);	
+				CreateTensegrity(pos.x + vec.x, pos.z + vec.z)
+			}
+			
+			var CreateTensegrity = function (x,z) {
+				var mesh = stageManager.CreateTensegrity(x, z);	
 				if (THREE.MultiSync != undefined) {
-					THREE.MultiSync.SceneAddLocalObject(mesh, {type: 'tensegrity', x:pos.x + vec.x, z:pos.z + vec.z});
+					THREE.MultiSync.SceneAddLocalObject(mesh, {type: 'tensegrity', 'x':x, 'z':z});
 					multiSyncLocals.push(mesh);
 				} else {
 					scene.add(mesh);
@@ -240,9 +254,13 @@
 			var MenuCreateMark = function() {
 				console.log("Mark"); 
 				var pos = THREE.CommonClicker.VRCamera.position;
-				var mesh = stageManager.CreateMark(pos.x, pos.z);	
+				CreateMark(pos.x,pos.z);
+			}
+			
+			var CreateMark = function(x,z) {
+				var mesh = stageManager.CreateMark(x,z);	
 				if (THREE.MultiSync != undefined) {
-					THREE.MultiSync.SceneAddLocalObject(mesh, {type: 'mark', x:pos.x, z:pos.z});
+					THREE.MultiSync.SceneAddLocalObject(mesh, {type: 'mark', 'x':x, 'z':z});
 					multiSyncLocals.push(mesh);
 				} else {
 					scene.add(mesh);
@@ -251,6 +269,7 @@
 			
 			var MenuClear = function() {
 				console.log("Clear Stage"); 
+				// TOOD: work out why this fails
 				// for (i=0; i < multiSyncLocals.length; i++) {
 				// 	THREE.MultiSync.remoteSync.removeLocalObject(multiSyncLocals[i]);
 				// }
@@ -260,6 +279,66 @@
 					var mesh = new THREE.Object3D();
 					THREE.MultiSync.SceneAddLocalObject(mesh, {type: 'clear'});
 				} 
+			}
+			
+			var MenuAct1A = function() {
+				MenuClear();
+				CreateHexapod(-1.0*1.9, 6.4);
+				CreateHuman(-1.0*-1.0, 2.2);
+				CreateHuman(-1.0*-0.1, 3.6);
+				CreateHuman(-1.0*-1.8, 3.8);
+				CreateMark(-1.0*0.7,1.6);
+				CreateMark(-1.0*-2.3,1.5);
+			}
+
+			var MenuAct1B = function() {
+				MenuClear();
+				CreateHexapod(-1.0*0.0, 3.0);
+				CreateHuman(-1.0*-2.4, 4.2);
+				CreateHuman(-1.0*2.3, 3.2);
+				CreateHuman(-1.0*0.0, 6.5);
+				CreateMark(-1.0*-1.4,0.7);
+				CreateMark(-1.0*-1.4,0.7); //-1m in height
+			}
+
+			var MenuAct2 = function() {
+				MenuClear();
+				CreateHexapod(-1.0*0.0, 3.5);
+				CreateHuman(-1.0*-3.1, 7.0);
+				CreateHuman(-1.0*-0.5, 6.1);
+				CreateHuman(-1.0*-1.8, 3.1);
+				CreateHuman(-1.0*0.0, 1.3);
+				CreateMark(-1.0*0.0,0.5);
+				CreateMark(-1.0*-2.2,0.6);
+				CreateMark(-1.0*-1.5,1.5);
+			}
+
+			var MenuAct3 = function() {
+				MenuClear();
+				CreateHuman(-1.0* -1.7, 4.2);
+				CreateHuman(-1.0* -1.5, 4.4);
+				CreateHuman(-1.0* 1.7, 1.0);
+				CreateHuman(-1.0* -0.1, 2.0);
+				CreateHuman(-1.0* 1.5, 4.4);
+				CreateHuman(-1.0* 0.6, 7.4);
+				CreateHuman(-1.0* 2.9, 6.3);
+				
+				CreateMark(-1.0* -1.6,0.2);
+				CreateMark(-1.0* -0.4,1.0);
+				CreateMark(-1.0* -0.6,2.2);
+			}
+
+			var MenuAct4 = function() {
+				MenuClear();
+				CreateTensegrity(-1.0* -0.1, 1.8);
+				
+				CreateHuman(-1.0* -2.1, 2.1);
+				CreateHuman(-1.0* -2.1, 6.3);
+				CreateHuman(-1.0* 1.6, 6.9);
+				CreateHuman(-1.0* 2.0, 2.5);
+				
+				CreateMark(-1.0* -0.0,0.1);
+				CreateMark(-1.0* 1.7,0.0);
 			}
 						
 			if (supportsVR) {
