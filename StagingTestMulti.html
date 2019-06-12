@@ -117,12 +117,20 @@
 
 				switch ( info.type ) {
 
-					case 'camera':
-						console.log('new remote viewer');
+					case 'controller':
+						console.log('new remote controller');
 						mesh = new THREE.Mesh(
-								new THREE.BoxGeometry(0.2, 0.2, 0.2),
+								new THREE.SphereGeometry( 0.1, 4, 4 ),
+								new THREE.MeshStandardMaterial({color: 0xFFFF00})
+							);
+						break;
+					case 'camera':
+						console.log('new remote head');
+						mesh = new THREE.Mesh(
+								new THREE.BoxGeometry(0.3, 0.3, 0.3),
 								new THREE.MeshStandardMaterial({color: 0xFF00FF})
 							);
+							mesh.translateZ(0.3);
 						break;
 					case 'human':
 						console.log('new human');
@@ -221,13 +229,16 @@
 			});
 
 
+			window.addEventListener( 'vr controller connected', function( event ){
+				THREE.MultiSync.SceneAddLocalObject(event.detail, {type: 'controller'});
+			});
+			
 			var render = function () {
 				THREE.MultiSync.sync();
 				var pos = THREE.CommonClicker.VRCamera.position;
 				var posString = "[L/R:" + (-1.0*pos.x).toFixed(1) + ", Height:" + pos.y.toFixed(1) + ", F/B:" + pos.z.toFixed(1) +"]"
 				THREE.CommonClicker.UpdateText([posString]); 
-				THREE.CommonClicker.Update();
-				//renderer.render( scene, camera );
+				THREE.CommonClicker.Update();				
 				renderer.render( scene, THREE.CommonClicker.VRCamera );
 			}
 

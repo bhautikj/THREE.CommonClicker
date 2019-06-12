@@ -203,6 +203,8 @@ THREE.CommonClicker.Update = function () {
 
 	THREE.VRController.update();
 	THREE.CommonClicker.PointerIntersect();
+	
+	// this.dispatchEvent(new CustomEvent('awesome', {'foo':'poo'}));
 }
 
 THREE.CommonClicker.PointerButtonDown = function(data, hand) {
