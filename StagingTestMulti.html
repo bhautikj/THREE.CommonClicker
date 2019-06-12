@@ -36,6 +36,12 @@
 				display:block;
 			}
 			#info a, .button { color: #f00; font-weight: bold; text-decoration: underline; cursor: pointer }
+			#menu {
+				color: #FFF;
+		    position:absolute;
+		    top:10px;
+		    left:10px;
+			}
 		</style>
 	</head>
 
@@ -44,6 +50,16 @@
 			<div id="your_id"></div>
 			<div id="link"></div>
 			<div id="message"></div>
+		</div>
+		<div id="menu">
+			<h4>Set Pieces</h4>
+			<button onclick="MenuCreateHuman()">Human</button><br/>
+			<button onclick="MenuCreateHexapod()">Hexapod</button><br/>
+			<button onclick="MenuCreateTensegrity()">Tensegrity</button><br/>
+			<button onclick="MenuCreateMark()">Mark</button><br/>
+			<h4>Stage</h4>
+			<button onclick="MenuClear()">Stage Clear</button><br/>
+			
 		</div>
 
 		<!-- common -->
@@ -144,6 +160,10 @@
 						console.log('new hexapod');
 						mesh = stageManager.CreateHexapod(info.x, info.z);
 						break;
+					case 'mark':
+						console.log('new mark');
+						mesh = stageManager.CreateMark(info.x, info.z);
+						break;
 					case 'clear':
 						console.log('clear');
 						mesh = undefined;
@@ -171,12 +191,7 @@
 			
 			window.addEventListener( 'resize', onWindowResize, false );
 
-
-			
-			// need a manager to reset/refresh objects in a scene
-			
-			
-			THREE.CommonClicker.AddPanelButton(["Human"], 0, function(mesh) { 
+			var MenuCreateHuman = function() {
 				console.log("Human");
 				var pos = THREE.CommonClicker.VRCamera.position;
 				var vec = new THREE.Vector3( 0, 0, -2);
@@ -188,8 +203,13 @@
 				} else {
 					scene.add(mesh);
 				}
-			});
-			THREE.CommonClicker.AddPanelButton(["Hexapod"], 1, function(mesh) { 
+			};
+			
+			var CreateHuman = function(x,z) {
+				
+			}
+			
+			var MenuCreateHexapod = function() {
 				console.log("Hexapod"); 
 				var pos = THREE.CommonClicker.VRCamera.position;
 				var vec = new THREE.Vector3( 0, 0, -2);
@@ -201,8 +221,9 @@
 				} else {
 					scene.add(mesh);
 				}
-			});
-			THREE.CommonClicker.AddPanelButton(["Tensegrity"], 2, function(mesh) { 
+			}
+			
+			var MenuCreateTensegrity = function() {
 				console.log("Tensegrity"); 
 				var pos = THREE.CommonClicker.VRCamera.position;
 				var vec = new THREE.Vector3( 0, 0, -2);
@@ -214,20 +235,47 @@
 				} else {
 					scene.add(mesh);
 				}
-			});
-			THREE.CommonClicker.AddPanelButton(["Clear Stage"], 3, function(mesh) { 
-				console.log("Clear Stage"); 
-				for (i=0; i < multiSyncLocals.length; i++) {
-					THREE.MultiSync.remoteSync.removeLocalObject(multiSyncLocals[i]);
+			}
+			
+			var MenuCreateMark = function() {
+				console.log("Mark"); 
+				var pos = THREE.CommonClicker.VRCamera.position;
+				var mesh = stageManager.CreateMark(pos.x, pos.z);	
+				if (THREE.MultiSync != undefined) {
+					THREE.MultiSync.SceneAddLocalObject(mesh, {type: 'mark', x:pos.x, z:pos.z});
+					multiSyncLocals.push(mesh);
+				} else {
+					scene.add(mesh);
 				}
+			}
+			
+			var MenuClear = function() {
+				console.log("Clear Stage"); 
+				// for (i=0; i < multiSyncLocals.length; i++) {
+				// 	THREE.MultiSync.remoteSync.removeLocalObject(multiSyncLocals[i]);
+				// }
 				multiSyncLocals = [];
 				stageManager.ClearStage();
 				if (THREE.MultiSync != undefined) {
 					var mesh = new THREE.Object3D();
 					THREE.MultiSync.SceneAddLocalObject(mesh, {type: 'clear'});
-				} 				
-			});
-
+				} 
+			}
+						
+			if (supportsVR) {
+				THREE.CommonClicker.AddPanelButton(["Human"], 0, function(mesh) { 
+					MenuCreateHuman();
+				});
+				THREE.CommonClicker.AddPanelButton(["Hexapod"], 1, function(mesh) { 
+					MenuCreateHexapod();
+				});
+				THREE.CommonClicker.AddPanelButton(["Tensegrity"], 2, function(mesh) { 
+					MenuCreateTensegrity();
+				});
+				THREE.CommonClicker.AddPanelButton(["Mark"], 3, function(mesh) { 
+					MenuCreateMark();
+				});
+			}
 
 			window.addEventListener( 'vr controller connected', function( event ){
 				THREE.MultiSync.SceneAddLocalObject(event.detail, {type: 'controller'});

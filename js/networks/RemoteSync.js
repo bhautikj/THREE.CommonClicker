@@ -858,7 +858,7 @@
 
 				var objectId = list[ i ].id;
 
-				var object = objests[ objectId ];
+				var object = objects[ objectId ];
 
 				if ( object === undefined ) continue;
 

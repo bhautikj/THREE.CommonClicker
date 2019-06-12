@@ -18,6 +18,7 @@
 THREE.SceneStager = function(scene){
 	this.scene = scene;
 	this.currentSceneArray = [];
+	// this.stageNode = this.CreateStage();
 };
 
 THREE.SceneStager.prototype.constructor = THREE.SceneStager
@@ -41,13 +42,15 @@ THREE.SceneStager.prototype.AddMesh = function(mesh, x, z, height) {
 }
 
 
-THREE.SceneStager.prototype.AddUnitCube = function(x, z) {	
+THREE.SceneStager.prototype.CreateMark = function(x, z) {	
 	var cubeMesh = new THREE.Mesh(
-						new THREE.BoxGeometry(1.0, 1.0, 1.0 ),
-						new THREE.MeshStandardMaterial({color: 0xEEFFFF})
+						new THREE.BoxGeometry(0.1, 0.1, 0.1 ),
+						new THREE.MeshStandardMaterial({color: 0x4444FF})
 					);
-	cubeMesh.translateY(0.5);
-	this.AddMesh(cubeMesh, x, z, 1);
+	cubeMesh.translateY(-0.01);
+	this.currentSceneArray.push(cubeMesh);	
+	this.LabelMesh(cubeMesh, x, z, 0.1);
+	return cubeMesh;
 }
 
 THREE.SceneStager.prototype.CreateHexapod = function(x,z) {
