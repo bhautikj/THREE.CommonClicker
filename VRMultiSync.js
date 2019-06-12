@@ -35,15 +35,15 @@ THREE.MultiSync.sync = function() {
 	scope.remoteSync.sync();
 }
 
-THREE.MultiSync.SceneAddSharedObject = function( mesh ) {
+THREE.MultiSync.SceneAddSharedObject = function( mesh, sharedID ) {
 	var scope = THREE.MultiSync;
-	scope.addSharedObject(mesh);
+	scope.remoteSync.addSharedObject(mesh, sharedID);
 	scope.scene.add(mesh);
 }
 
-THREE.MultiSync.SceneAddLocalObject = function( mesh, type ) {
+THREE.MultiSync.SceneAddLocalObject = function( mesh, info ) {
 	var scope = THREE.MultiSync;
-	scope.addLocalObject(mesh, {type: type});
+	scope.remoteSync.addLocalObject(mesh, info);
 	scope.scene.add(mesh);
 }
 
@@ -117,7 +117,10 @@ THREE.MultiSync.onReceive = function( data ) {
 
 THREE.MultiSync.onAdd = function( destId, objectId, info ) {
 	var scope = THREE.MultiSync;
-	var mesh = scope.mirrorRemoteCreateCallback(info.type)
+	var mesh = scope.mirrorRemoteCreateCallback(info)
+	if (mesh === undefined) {
+		return;
+	}
 	console.log("created",mesh,"of type",info.type);
 	scope.scene.add( mesh );
 	scope.remoteSync.addRemoteObject( destId, objectId, mesh );

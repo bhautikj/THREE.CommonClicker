@@ -22,7 +22,7 @@ THREE.SceneStager = function(scene){
 
 THREE.SceneStager.prototype.constructor = THREE.SceneStager
 
-THREE.SceneStager.prototype.AddMesh = function(mesh, x, z, height) {	
+THREE.SceneStager.prototype.LabelMesh = function(mesh, x, z, height) {	
 	var textPanel = new THREE.TextPanel(["X:" + (-1.0*x).toFixed(1) + " Z:" + z.toFixed(1)], 72);
 	var textMesh = textPanel.GetMesh();
 	// textMesh.rotateY(Math.PI);
@@ -31,10 +31,15 @@ THREE.SceneStager.prototype.AddMesh = function(mesh, x, z, height) {
 
 	mesh.translateX(x);
 	mesh.translateZ(z);
-	this.scene.add(mesh);
 	this.currentSceneArray.push(mesh);	
 	this.currentSceneArray.push(textMesh);
 }
+
+THREE.SceneStager.prototype.AddMesh = function(mesh, x, z, height) {	
+	this.LabelMesh(mesh,x,z,height);
+	this.scene.add(mesh);
+}
+
 
 THREE.SceneStager.prototype.AddUnitCube = function(x, z) {	
 	var cubeMesh = new THREE.Mesh(
@@ -45,20 +50,19 @@ THREE.SceneStager.prototype.AddUnitCube = function(x, z) {
 	this.AddMesh(cubeMesh, x, z, 1);
 }
 
-THREE.SceneStager.prototype.AddHexapod = function(x,z) {
+THREE.SceneStager.prototype.CreateHexapod = function(x,z) {
 	var hexapodRadius = 1.5;
 	var geo = new THREE.SphereGeometry(hexapodRadius, 4, 4);
 	var mat = new THREE.MeshBasicMaterial( {color: 0xffffff, wireframe: true, wireframeLinewidth: 5} );
 	var mesh = new THREE.Mesh( geo, mat);
 	// mesh.rotateX(Math.PI*0.5);
-	mesh.translateY(hexapodRadius*0.75);
 	
 	var humanHeight = 1.8;
 	var bodyPole = new THREE.Mesh(
 						new THREE.BoxGeometry(0.4, humanHeight, 0.4 ),
 						new THREE.MeshStandardMaterial({color: 0xEEFFFF})
 					);
-	bodyPole.translateY(humanHeight*0.5);
+	// bodyPole.translateY(humanHeight*0.5);
 
 	var torso = new THREE.Mesh(
 						new THREE.BoxGeometry(0.8, 0.8, 0.6 ),
@@ -66,24 +70,23 @@ THREE.SceneStager.prototype.AddHexapod = function(x,z) {
 					);
 	torso.translateY(0.15);
 	bodyPole.add(torso);  
-	bodyPole.translateX(x);
-	bodyPole.translateZ(z);
-  this.scene.add(bodyPole);
+	mesh.translateY(hexapodRadius*0.75);
+    mesh.add(bodyPole);
+	
 	this.currentSceneArray.push(bodyPole);	
 	this.currentSceneArray.push(torso);	
 	
-	
-	this.AddMesh(mesh, x, z, 1.5);
+	this.LabelMesh(mesh, x, z, 1.5);
+	return mesh;
 }
 
-THREE.SceneStager.prototype.AddTensegrity = function(x,z) {
+THREE.SceneStager.prototype.CreateTensegrity = function(x,z) {
 	var elevation = 2;
 	var hexapodRadius = 1.5;
 	var geo = new THREE.SphereGeometry(hexapodRadius, 4, 4);
 	var mat = new THREE.MeshBasicMaterial( {color: 0xffffff, wireframe: true, wireframeLinewidth: 5} );
 	var mesh = new THREE.Mesh( geo, mat);
 	// mesh.rotateX(Math.PI*0.5);
-	mesh.translateY(hexapodRadius*0.75 + elevation);
 	
 	var humanHeight = 1.8;
 	var bodyPole = new THREE.Mesh(
@@ -98,20 +101,19 @@ THREE.SceneStager.prototype.AddTensegrity = function(x,z) {
 					);
 	torso.translateY(0.15);
 	bodyPole.add(torso);  
-	bodyPole.translateX(x);
-	bodyPole.translateZ(z);
-	bodyPole.translateY(elevation);
 	
-  this.scene.add(bodyPole);
 	this.currentSceneArray.push(bodyPole);	
 	this.currentSceneArray.push(torso);	
-	
-	
-	this.AddMesh(mesh, x, z, -1.5);
+	mesh.add(bodyPole);
+
+	bodyPole.translateY(-1.0*hexapodRadius*0.75);
+	mesh.translateY(hexapodRadius*0.75 + elevation);
+
+	this.LabelMesh(mesh, x, z, -1.5);
+	return mesh;
 }
 
-
-THREE.SceneStager.prototype.AddHuman = function(x, z) {	
+THREE.SceneStager.prototype.CreateHumanMesh = function(x,z) {
 	var humanHeight = 1.8;
 	var bodyPole = new THREE.Mesh(
 						new THREE.BoxGeometry(0.4, humanHeight, 0.4 ),
@@ -124,13 +126,14 @@ THREE.SceneStager.prototype.AddHuman = function(x, z) {
 						new THREE.MeshStandardMaterial({color: 0xEEFFFF})
 					);
 	torso.translateY(0.15);
-	bodyPole.add(torso);
-	
 	//track torso separately
+	bodyPole.add(torso);
 	this.currentSceneArray.push(torso);	
-	this.AddMesh(bodyPole, x, z, 1.5);
+	
+	// add label to mesh
+	this.LabelMesh(bodyPole,x,z,humanHeight);
+	return bodyPole;	
 }
-
 
 THREE.SceneStager.prototype.ClearStage = function() {
 	for (var i = 0; i < this.currentSceneArray.length; i++) {
@@ -140,4 +143,52 @@ THREE.SceneStager.prototype.ClearStage = function() {
 		this.currentSceneArray[i] = undefined;
 	}
 	this.currentSceneArray = [];
+}
+
+THREE.SceneStager.prototype.CreateStage = function() {
+	var stageNode = new THREE.Object3D();
+	
+	//stage
+	var stageWidth = 7;
+	var stageDepth = 8;
+	var stageHeight = 5;
+
+	var stagePlane = new THREE.Mesh( new THREE.PlaneGeometry( stageWidth, stageDepth, 32, 32 ) , 
+	                                 new THREE.MeshPhongMaterial( {color: 0x050505, side: THREE.DoubleSide} ) );
+	stagePlane.rotateX(Math.PI*0.5);
+	stagePlane.translateY(stageDepth*0.5);
+	stageNode.add( stagePlane );
+	
+	var stageRoof = new THREE.Mesh( new THREE.PlaneGeometry( stageWidth, stageDepth, 32, 32 ) , 
+	                                 new THREE.MeshPhongMaterial( {color: 0x0E0E11, side: THREE.DoubleSide} ) );
+	stageRoof.rotateX(Math.PI*0.5);
+	stageRoof.translateY(stageDepth*0.5);
+	stageRoof.translateZ(-1.0*stageHeight);
+	stageNode.add( stageRoof );
+
+	var stageLeft = new THREE.Mesh( new THREE.PlaneGeometry( stageDepth, stageHeight, 32, 32 ) , 
+	                                 new THREE.MeshPhongMaterial( {color: 0x050505, side: THREE.DoubleSide} ) );
+	stageLeft.rotateY(Math.PI*0.5);
+	stageLeft.translateY(stageHeight*0.5);
+	stageLeft.translateX(-0.5*stageDepth);
+	stageLeft.translateZ(0.5*stageWidth);
+	stageNode.add( stageLeft );
+
+	var stageRight = new THREE.Mesh( new THREE.PlaneGeometry( stageDepth, stageHeight, 32, 32 ) , 
+	                                 new THREE.MeshPhongMaterial( {color: 0x0E0E0E, side: THREE.DoubleSide} ) );
+	stageRight.rotateY(Math.PI*0.5);
+	stageRight.translateY(stageHeight*0.5);
+	stageRight.translateX(-0.5*stageDepth);
+	stageRight.translateZ(-0.5*stageWidth);
+	stageNode.add( stageRight );
+	
+	
+	var stageBack = new THREE.Mesh( new THREE.PlaneGeometry( stageWidth, stageHeight, 32, 32 ) , 
+	                                 new THREE.MeshPhongMaterial( {color: 0x051105, side: THREE.DoubleSide} ) );
+	// stageBack.rotateX(Math.PI*0.5);
+	stageBack.translateY(stageHeight*0.5);
+	stageBack.translateZ(stageDepth);
+	stageNode.add( stageBack );
+	
+	return stageNode;
 }

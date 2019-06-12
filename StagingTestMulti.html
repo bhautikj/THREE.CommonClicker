@@ -100,18 +100,50 @@
 			//stage manager
 			var stageManager = new THREE.SceneStager(scene);
 			// stageManager.AddUnitCube(0.0, 2.0);
+			var multiSyncLocals = [];
+			//grid
+			var grid = new THREE.GridHelper( 200, 200 );
+			grid.setColors( 0xffffff, 0xffffff );
+			scene.add( grid );
+			scene.fog = new THREE.FogExp2( 0x000000, 0.0128 );
+			renderer.setClearColor( scene.fog.color, 1 );
 			
-			var creatorCallback = function(type) {
+			var stageNode = stageManager.CreateStage();
+			scene.add(stageNode);
+			
+			
+			var creatorCallback = function(info) {
 				var mesh;
 
-				switch ( type ) {
+				switch ( info.type ) {
 
 					case 'camera':
-						console.log('new camera');
+						console.log('new remote viewer');
 						mesh = new THREE.Mesh(
 								new THREE.BoxGeometry(0.2, 0.2, 0.2),
 								new THREE.MeshStandardMaterial({color: 0xFF00FF})
 							);
+						break;
+					case 'human':
+						console.log('new human');
+						mesh = stageManager.CreateHumanMesh(info.x, info.z);
+						break;
+					case 'tensegrity':
+						console.log('new tensegrity');
+						mesh = stageManager.CreateTensegrity(info.x, info.z);
+						break;
+					case 'hexapod':
+						console.log('new hexapod');
+						mesh = stageManager.CreateHexapod(info.x, info.z);
+						break;
+					case 'clear':
+						console.log('clear');
+						mesh = undefined;
+						for (i=0; i < multiSyncLocals.length; i++) {
+							THREE.MultiSync.remoteSync.removeLocalObject(multiSyncLocals[i]);
+						}
+						multiSyncLocals = [];
+						stageManager.ClearStage();
 						break;
 					default:
 						return;
@@ -120,57 +152,8 @@
 			};
 			
 			THREE.MultiSync.Init (scene, camera, creatorCallback);
-				
-			//grid
-			var grid = new THREE.GridHelper( 200, 200 );
-			grid.setColors( 0xffffff, 0xffffff );
-			scene.add( grid );
-			scene.fog = new THREE.FogExp2( 0x000000, 0.0128 );
-			renderer.setClearColor( scene.fog.color, 1 );
-			
-			//stage
-			var stageWidth = 7;
-			var stageDepth = 8;
-			var stageHeight = 5;
+			THREE.MultiSync.remoteSync.addSharedObject(stageNode, 0);
 
-			var stagePlane = new THREE.Mesh( new THREE.PlaneGeometry( stageWidth, stageDepth, 32, 32 ) , 
-			                                 new THREE.MeshPhongMaterial( {color: 0x050505, side: THREE.DoubleSide} ) );
-			stagePlane.rotateX(Math.PI*0.5);
-			stagePlane.translateY(stageDepth*0.5);
-			scene.add( stagePlane );
-			
-			var stageRoof = new THREE.Mesh( new THREE.PlaneGeometry( stageWidth, stageDepth, 32, 32 ) , 
-			                                 new THREE.MeshPhongMaterial( {color: 0x0E0E11, side: THREE.DoubleSide} ) );
-			stageRoof.rotateX(Math.PI*0.5);
-			stageRoof.translateY(stageDepth*0.5);
-			stageRoof.translateZ(-1.0*stageHeight);
-			scene.add( stageRoof );
-
-			var stageLeft = new THREE.Mesh( new THREE.PlaneGeometry( stageDepth, stageHeight, 32, 32 ) , 
-			                                 new THREE.MeshPhongMaterial( {color: 0x050505, side: THREE.DoubleSide} ) );
-			stageLeft.rotateY(Math.PI*0.5);
-			stageLeft.translateY(stageHeight*0.5);
-			stageLeft.translateX(-0.5*stageDepth);
-			stageLeft.translateZ(0.5*stageWidth);
-			scene.add( stageLeft );
-
-			var stageRight = new THREE.Mesh( new THREE.PlaneGeometry( stageDepth, stageHeight, 32, 32 ) , 
-			                                 new THREE.MeshPhongMaterial( {color: 0x0E0E0E, side: THREE.DoubleSide} ) );
-			stageRight.rotateY(Math.PI*0.5);
-			stageRight.translateY(stageHeight*0.5);
-			stageRight.translateX(-0.5*stageDepth);
-			stageRight.translateZ(-0.5*stageWidth);
-			scene.add( stageRight );
-			
-			
-			var stageBack = new THREE.Mesh( new THREE.PlaneGeometry( stageWidth, stageHeight, 32, 32 ) , 
-			                                 new THREE.MeshPhongMaterial( {color: 0x051105, side: THREE.DoubleSide} ) );
-			// stageBack.rotateX(Math.PI*0.5);
-			stageBack.translateY(stageHeight*0.5);
-			stageBack.translateZ(stageDepth);
-			scene.add( stageBack );
-			
-			
 
 			var onWindowResize = function() {
 				camera.aspect = window.innerWidth / window.innerHeight;
@@ -184,30 +167,57 @@
 			
 			// need a manager to reset/refresh objects in a scene
 			
+			
 			THREE.CommonClicker.AddPanelButton(["Human"], 0, function(mesh) { 
 				console.log("Human");
 				var pos = THREE.CommonClicker.VRCamera.position;
 				var vec = new THREE.Vector3( 0, 0, -2);
 				vec.applyQuaternion( THREE.CommonClicker.VRCamera.quaternion );
-				stageManager.AddHuman(pos.x + vec.x, pos.z + vec.z);
+				var mesh = stageManager.CreateHumanMesh(pos.x + vec.x, pos.z + vec.z);	
+				if (THREE.MultiSync != undefined) {
+					THREE.MultiSync.SceneAddLocalObject(mesh, {type: 'human', x:pos.x + vec.x, z:pos.z + vec.z});
+					multiSyncLocals.push(mesh);
+				} else {
+					scene.add(mesh);
+				}
 			});
 			THREE.CommonClicker.AddPanelButton(["Hexapod"], 1, function(mesh) { 
 				console.log("Hexapod"); 
 				var pos = THREE.CommonClicker.VRCamera.position;
 				var vec = new THREE.Vector3( 0, 0, -2);
 				vec.applyQuaternion( THREE.CommonClicker.VRCamera.quaternion );
-				stageManager.AddHexapod(pos.x + vec.x, pos.z + vec.z);
+				var mesh = stageManager.CreateHexapod(pos.x + vec.x, pos.z + vec.z);	
+				if (THREE.MultiSync != undefined) {
+					THREE.MultiSync.SceneAddLocalObject(mesh, {type: 'hexapod', x:pos.x + vec.x, z:pos.z + vec.z});
+					multiSyncLocals.push(mesh);
+				} else {
+					scene.add(mesh);
+				}
 			});
 			THREE.CommonClicker.AddPanelButton(["Tensegrity"], 2, function(mesh) { 
-				console.log("sceneC"); 
+				console.log("Tensegrity"); 
 				var pos = THREE.CommonClicker.VRCamera.position;
 				var vec = new THREE.Vector3( 0, 0, -2);
 				vec.applyQuaternion( THREE.CommonClicker.VRCamera.quaternion );
-				stageManager.AddTensegrity(pos.x + vec.x, pos.z + vec.z);
+				var mesh = stageManager.CreateTensegrity(pos.x + vec.x, pos.z + vec.z);	
+				if (THREE.MultiSync != undefined) {
+					THREE.MultiSync.SceneAddLocalObject(mesh, {type: 'tensegrity', x:pos.x + vec.x, z:pos.z + vec.z});
+					multiSyncLocals.push(mesh);
+				} else {
+					scene.add(mesh);
+				}
 			});
 			THREE.CommonClicker.AddPanelButton(["Clear Stage"], 3, function(mesh) { 
 				console.log("Clear Stage"); 
+				for (i=0; i < multiSyncLocals.length; i++) {
+					THREE.MultiSync.remoteSync.removeLocalObject(multiSyncLocals[i]);
+				}
+				multiSyncLocals = [];
 				stageManager.ClearStage();
+				if (THREE.MultiSync != undefined) {
+					var mesh = new THREE.Object3D();
+					THREE.MultiSync.SceneAddLocalObject(mesh, {type: 'clear'});
+				} 				
 			});
 
 
