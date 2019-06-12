@@ -64,6 +64,8 @@
 			<button onclick="MenuAct3()">Act 3</button><br/>
 			<button onclick="MenuAct4()">Act 4</button><br/>
 			<button onclick="MenuClear()">Stage Clear</button><br/>
+			<!-- <h4>Camera</h4> -->
+			<!-- <button onclick="MenuSwitchCamera()">Switch Camera</button><br/> -->
 			
 			
 		</div>
@@ -133,6 +135,9 @@
 			var stageNode = stageManager.CreateStage();
 			scene.add(stageNode);
 			
+			var cameraArray = [camera];
+			var cameraIndex = 0;
+			
 			
 			var creatorCallback = function(info) {
 				var mesh;
@@ -153,6 +158,10 @@
 								new THREE.MeshStandardMaterial({color: 0xFF00FF})
 							);
 							mesh.translateZ(0.3);
+							var followCamera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 500 );
+							mesh.add(followCamera);
+							followCamera.translateZ(-0.3);
+							cameraArray.push(followCamera);
 						break;
 					case 'human':
 						console.log('new human');
@@ -187,6 +196,7 @@
 			
 			THREE.MultiSync.Init (scene, camera, creatorCallback);
 			THREE.MultiSync.remoteSync.addSharedObject(stageNode, 0);
+			
 
 
 			var onWindowResize = function() {
@@ -281,6 +291,27 @@
 				} 
 			}
 			
+			var MenuSwitchCamera = function() {
+				var oldIndex = cameraIndex;
+				if (cameraArray.length == 0){
+					return;
+				}
+				cameraArray[oldIndex].remove(THREE.CommonClicker.VRCamera);
+				cameraIndex = (cameraIndex + 1) % cameraArray.length;
+				// THREE.CommonClicker.VRCamera.copy(cameraArray[cameraIndex]);
+				// THREE.CommonClicker.VRCamera.matrix.copy(cameraArray[cameraIndex].matrix);
+				// THREE.CommonClicker.VRCamera.matrix.needsUpdate = true;
+
+				THREE.CommonClicker.VRCamera.position.copy(cameraArray[cameraIndex].position);
+				THREE.CommonClicker.VRCamera.position.needsUpdate = true;
+				THREE.CommonClicker.VRCamera.rotation.copy(cameraArray[cameraIndex].rotation);
+				THREE.CommonClicker.VRCamera.rotation.needsUpdate = true;
+				
+				cameraArray[cameraIndex].add(THREE.CommonClicker.VRCamera);
+				//THREE.CommonClicker.VRCamera.rotateY(Math.PI);
+				// THREE.CommonClicker.VRCamera.rotateY(Math.PI);
+			}
+			
 			var MenuAct1A = function() {
 				MenuClear();
 				CreateHexapod(-1.0*1.9, 6.4);
@@ -362,10 +393,17 @@
 			
 			var render = function () {
 				THREE.MultiSync.sync();
+								
 				var pos = THREE.CommonClicker.VRCamera.position;
 				var posString = "[L/R:" + (-1.0*pos.x).toFixed(1) + ", Height:" + pos.y.toFixed(1) + ", F/B:" + pos.z.toFixed(1) +"]"
 				THREE.CommonClicker.UpdateText([posString]); 
 				THREE.CommonClicker.Update();				
+
+				// if (cameraIndex != 0) {
+				// 	THREE.CommonClicker.VRCamera.matrix.copy( cameraArray[cameraIndex].matrix );
+				// 	THREE.CommonClicker.VRCamera.matrix.needsUpdate = true;
+				// }
+
 				renderer.render( scene, THREE.CommonClicker.VRCamera );
 			}
 
