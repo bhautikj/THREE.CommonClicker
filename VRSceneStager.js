@@ -15,10 +15,23 @@
 	OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+
+// var geometry = new THREE.ConeGeometry( 0.5, 2, 32 );
+// var material = new THREE.MeshBasicMaterial( {color: 0xffff00} );
+// var cone = new THREE.Mesh( geometry, material );
+// cone.rotateX(0.5*Math.PI);
+// cone.translateY(-5);
+//
+// var anchor = new THREE.Object3D();
+// anchor.add(cone);
+// anchor.rotateX(0.5*Math.PI);
+//
+// scene.add(anchor);
+
 THREE.SceneStager = function(scene){
 	this.scene = scene;
 	this.currentSceneArray = [];
-	// this.stageNode = this.CreateStage();
+	this.stageNode = this.CreateStage();
 };
 
 THREE.SceneStager.prototype.constructor = THREE.SceneStager
@@ -39,6 +52,7 @@ THREE.SceneStager.prototype.LabelMesh = function(mesh, x, z, height) {
 THREE.SceneStager.prototype.AddMesh = function(mesh, x, z, height) {	
 	this.LabelMesh(mesh,x,z,height);
 	this.scene.add(mesh);
+	// this.stageNode.add(mesh);
 }
 
 

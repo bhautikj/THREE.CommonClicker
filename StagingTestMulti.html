@@ -63,9 +63,10 @@
 			<button onclick="MenuAct2()">Act 2</button><br/>
 			<button onclick="MenuAct3()">Act 3</button><br/>
 			<button onclick="MenuAct4()">Act 4</button><br/>
+			<!-- <button onclick="MenuStageHeight()">Stage Height</button><br/> -->
 			<button onclick="MenuClear()">Stage Clear</button><br/>
-			<!-- <h4>Camera</h4> -->
-			<!-- <button onclick="MenuSwitchCamera()">Switch Camera</button><br/> -->
+			<h4>Camera</h4>
+			<button onclick="MenuSwitchCamera()">Switch Camera</button><br/>
 			
 			
 		</div>
@@ -132,7 +133,8 @@
 			scene.fog = new THREE.FogExp2( 0x000000, 0.0128 );
 			renderer.setClearColor( scene.fog.color, 1 );
 			
-			var stageNode = stageManager.CreateStage();
+			//var stageNode = stageManager.CreateStage();
+			var stageNode = stageManager.stageNode;
 			scene.add(stageNode);
 			
 			var cameraArray = [camera];
@@ -277,6 +279,17 @@
 				}
 			}
 			
+			var lowered = false;
+			var MenuStageHeight = function() {
+				if (lowered == false) {
+					stageNode.translateY(-2.5);
+					lowered = true;
+				} else {
+					stageNode.translateY(2.5);
+					lowered = false;
+				}
+			}
+			
 			var MenuClear = function() {
 				console.log("Clear Stage"); 
 				// TOOD: work out why this fails
@@ -298,18 +311,21 @@
 				}
 				cameraArray[oldIndex].remove(THREE.CommonClicker.VRCamera);
 				cameraIndex = (cameraIndex + 1) % cameraArray.length;
-				// THREE.CommonClicker.VRCamera.copy(cameraArray[cameraIndex]);
-				// THREE.CommonClicker.VRCamera.matrix.copy(cameraArray[cameraIndex].matrix);
-				// THREE.CommonClicker.VRCamera.matrix.needsUpdate = true;
-
-				THREE.CommonClicker.VRCamera.position.copy(cameraArray[cameraIndex].position);
-				THREE.CommonClicker.VRCamera.position.needsUpdate = true;
-				THREE.CommonClicker.VRCamera.rotation.copy(cameraArray[cameraIndex].rotation);
-				THREE.CommonClicker.VRCamera.rotation.needsUpdate = true;
 				
-				cameraArray[cameraIndex].add(THREE.CommonClicker.VRCamera);
-				//THREE.CommonClicker.VRCamera.rotateY(Math.PI);
-				// THREE.CommonClicker.VRCamera.rotateY(Math.PI);
+				if (cameraIndex == 0) {
+					THREE.CommonClicker.Controls.reset();
+					scene.add(THREE.CommonClicker.VRCamera);
+				    THREE.CommonClicker.Controls = new THREE.OrbitControls( THREE.CommonClicker.VRCamera, THREE.CommonClicker.VRRenderer.domElement );
+					THREE.CommonClicker.Controls.target.set( 0, 0, 1 );
+					return;
+				}
+
+				var newCameraParent = cameraArray[cameraIndex];
+				
+				THREE.CommonClicker.Controls.reset();
+				THREE.CommonClicker.VRCamera.matrixWorld.copy(newCameraParent.matrixWorld);
+				THREE.CommonClicker.VRCamera.matrixWorldNeedsUpdate = true;
+				newCameraParent.add(THREE.CommonClicker.VRCamera);
 			}
 			
 			var MenuAct1A = function() {
